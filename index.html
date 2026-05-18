@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Paradox SMP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100vh; }
+
+    :root {
+      --bg:    #060d14;
+      --card:  #0b1825;
+      --sky:   #38bdf8;
+      --skylt: #7dd3fc;
+      --text:  #e0f2fe;
+      --muted: #5a7a8e;
+      --bdr:   rgba(56,189,248,0.14);
+      --bdr2:  rgba(56,189,248,0.32);
+      --nh:    68px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--sky); border-radius: 3px; }
+
+    /* ── REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.55s ease, transform 0.55s ease; }
+    .revealed { opacity: 1; transform: none; }
+
+    /* ── GRADIENT TEXT ── */
+    .gt {
+      background: linear-gradient(135deg, var(--sky), var(--skylt));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
+    }
+
+    /* ── PAGE FADE ── */
+    .page-wrap { animation: pagefade 0.32s ease; }
+    @keyframes pagefade { from { opacity:0; transform:translateY(9px); } to { opacity:1; transform:none; } }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      position: fixed; top: 0; left: 0; width: 100%; z-index: 200;
+      height: var(--nh);
+      background: transparent;
+      border-bottom: 1px solid transparent;
+      transition: background 0.3s, border-color 0.3s, backdrop-filter 0.3s;
+    }
+    .navbar.scrolled {
+      background: rgba(6,13,20,0.92);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom-color: var(--bdr);
+    }
+    .nav-inner {
+      width: 100%; height: 100%;
+      display: flex; align-items: center;
+      padding: 0 48px; gap: 24px;
+    }
+    .nav-logo {
+      font-family: 'Cinzel', serif; font-size: 1.2rem; font-weight: 700;
+      cursor: pointer; white-space: nowrap; letter-spacing: 0.05em; user-select: none;
+    }
+    .nav-logo .c1 { color: #7dd3fc; }
+    .nav-logo .c2 { color: #38bdf8; }
+    .nav-links { display: flex; gap: 2px; margin: 0 auto; }
+    .nav-link {
+      background: none; border: none; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; font-size: 0.92rem; font-weight: 500;
+      color: var(--muted); padding: 8px 18px; border-radius: 9px;
+      transition: color 0.2s, background 0.2s;
+      -webkit-font-smoothing: antialiased;
+    }
+    .nav-link:hover { color: var(--text); background: rgba(56,189,248,0.08); }
+    .nav-link.active { color: var(--sky); background: rgba(56,189,248,0.07); }
+    .nav-right { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+    .btn-discord-nav {
+      display: flex; align-items: center; gap: 7px;
+      background: rgba(88,101,242,0.18); color: #a5b4fc;
+      border: 1px solid rgba(88,101,242,0.35); padding: 8px 16px; border-radius: 9px;
+      font-size: 0.87rem; font-weight: 600; text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+      font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased;
+    }
+    .btn-discord-nav:hover { background: rgba(88,101,242,0.32); transform: translateY(-1px); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; margin-left: auto; }
+    .hl { display: block; width: 24px; height: 2px; background: var(--text); border-radius: 2px; transition: transform 0.3s, opacity 0.3s; }
+    .mob-menu {
+      position: fixed; top: var(--nh); left: 0; width: 100%;
+      background: rgba(6,13,20,0.98); backdrop-filter: blur(20px);
+      display: flex; flex-direction: column; gap: 4px;
+      padding: 0 20px; max-height: 0; overflow: hidden;
+      transition: max-height 0.4s ease, padding 0.3s;
+      border-bottom: 1px solid transparent; z-index: 199;
+    }
+    .mob-menu.open { max-height: 360px; padding: 16px 20px; border-bottom-color: var(--bdr); }
+    .mob-link {
+      background: none; border: none; cursor: pointer; text-align: left;
+      font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500;
+      color: var(--muted); padding: 12px 8px; border-radius: 8px;
+      text-decoration: none; display: flex; align-items: center;
+      transition: color 0.2s, background 0.2s;
+    }
+    .mob-link:hover { color: var(--text); background: rgba(56,189,248,0.07); }
+
+    /* ── BTN PRIMARY ── */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--sky), var(--skylt));
+      color: #060d14; border: none; cursor: pointer;
+      padding: 13px 32px; border-radius: 13px;
+      font-size: 0.98rem; font-weight: 700; font-family: 'DM Sans', sans-serif;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 24px rgba(56,189,248,0.32);
+      letter-spacing: 0.01em; -webkit-font-smoothing: antialiased;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 36px rgba(56,189,248,0.48); }
+
+    /* ── PAGE ── */
+    .page { width: 100%; padding-top: var(--nh); min-height: 100vh; }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; width: 100%;
+      min-height: calc(100vh - var(--nh));
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 80px 48px; overflow: hidden;
+    }
+    .hero-glow {
+      position: absolute; width: 900px; height: 700px; border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(56,189,248,0.09) 0%, transparent 70%);
+      top: -120px; left: 50%; transform: translateX(-50%); pointer-events: none;
+    }
+    .hero-inner { position: relative; z-index: 1; width: 100%; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.28);
+      color: var(--sky); padding: 7px 18px; border-radius: 99px;
+      font-size: 0.84rem; font-weight: 600; letter-spacing: 0.06em; margin-bottom: 28px;
+      animation: badge-pulse 3s ease-in-out infinite;
+    }
+    @keyframes badge-pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(56,189,248,0.2); }
+      50% { box-shadow: 0 0 0 8px rgba(56,189,248,0); }
+    }
+    .hero-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(3rem, 6.5vw, 7rem);
+      font-weight: 900; line-height: 1.05; margin-bottom: 24px;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+    .hero-sub {
+      font-size: clamp(1rem, 1.4vw, 1.2rem);
+      color: var(--muted); line-height: 1.8; font-weight: 400;
+      margin-bottom: 0;
+    }
+    .scroll-hint {
+      position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
+      font-size: 0.76rem; color: var(--muted); letter-spacing: 0.12em;
+      opacity: 0.4; animation: bob 2.5s ease-in-out infinite; pointer-events: none;
+    }
+    @keyframes bob {
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(7px); }
+    }
+
+    /* ── SECTIONS ── */
+    .sect { width: 100%; padding: 72px 48px; }
+    .sect-label { font-size: 0.73rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--sky); margin-bottom: 10px; }
+    .sect-title { font-family: 'Cinzel', serif; font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 700; margin-bottom: 44px; line-height: 1.2; }
+
+    /* ── FEATURES ── */
+    .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .feat-card {
+      position: relative; overflow: hidden; background: var(--card);
+      border: 1px solid var(--bdr); border-radius: 18px; padding: 32px 28px;
+      text-align: left; transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s; cursor: default;
+    }
+    .feat-card:hover { border-color: var(--bdr2); transform: translateY(-4px); box-shadow: 0 14px 44px rgba(56,189,248,0.09); }
+    .feat-card:hover .card-glow { opacity: 1; }
+    .card-glow { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.4s; background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(56,189,248,0.07), transparent); }
+    .feat-icon { font-size: 2rem; margin-bottom: 16px; }
+    .feat-title { font-family: 'Cinzel', serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+    .feat-desc { font-size: 0.92rem; color: var(--muted); line-height: 1.72; }
+
+    /* ── PAGE HERO ── */
+    .page-hero { position: relative; width: 100%; padding: 80px 48px 56px; text-align: center; overflow: hidden; }
+    .page-hero-glow { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 70% at 50% 40%, rgba(56,189,248,0.07), transparent); pointer-events: none; }
+    .page-hero-title { font-family: 'Cinzel', serif; font-size: clamp(2.6rem, 5vw, 5rem); font-weight: 900; margin-bottom: 14px; position: relative; }
+    .page-hero-sub { color: var(--muted); font-size: 1.05rem; max-width: 560px; margin: 0 auto 20px; position: relative; line-height: 1.75; }
+    .notice { display: inline-flex; align-items: center; gap: 8px; background: rgba(56,189,248,0.07); border: 1px solid var(--bdr); padding: 8px 20px; border-radius: 99px; font-size: 0.82rem; color: var(--muted); position: relative; }
+
+    /* ── FEATURED BANNER ── */
+    .feat-banner { background: linear-gradient(135deg, rgba(245,158,11,0.11), rgba(56,189,248,0.04)); border: 1px solid rgba(245,158,11,0.3); border-radius: 20px; padding: 52px 48px; text-align: center; }
+    .feat-banner-badge { display: inline-block; background: rgba(245,158,11,0.14); color: #fbbf24; padding: 5px 16px; border-radius: 99px; font-size: 0.79rem; font-weight: 700; letter-spacing: 0.07em; margin-bottom: 14px; }
+    .feat-banner-name { font-family: 'Cinzel', serif; font-size: 2.2rem; font-weight: 900; margin-bottom: 10px; color: #f59e0b; }
+    .feat-banner-desc { color: var(--muted); margin-bottom: 18px; font-size: 1rem; line-height: 1.7; }
+    .feat-banner-price { font-family: 'Cinzel', serif; font-size: 3rem; font-weight: 900; color: #f59e0b; margin-bottom: 28px; }
+
+    /* ── TABS ── */
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+    .tab { background: rgba(255,255,255,0.04); border: 1px solid var(--bdr); color: var(--muted); padding: 9px 22px; border-radius: 10px; cursor: pointer; font-size: 0.89rem; font-weight: 500; font-family: 'DM Sans', sans-serif; transition: all 0.2s; -webkit-font-smoothing: antialiased; }
+    .tab:hover { color: var(--text); background: rgba(56,189,248,0.08); }
+    .tab.active { background: rgba(56,189,248,0.12); border-color: var(--bdr2); color: var(--sky); }
+
+    /* ── RANK CARDS ── */
+    .ranks-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 8px; }
+    .rank-card {
+      position: relative; overflow: hidden; background: var(--card);
+      border: 1px solid var(--bdr); border-radius: 20px; padding: 28px 22px;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    }
+    .rank-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(56,189,248,0.09); }
+    .rank-card:hover .card-glow { opacity: 1; }
+    .rank-crown { font-size: 2.2rem; margin-bottom: 12px; }
+    .rank-name { font-family: 'Cinzel', serif; font-size: 1.25rem; font-weight: 900; margin-bottom: 6px; letter-spacing: 0.02em; }
+    .rank-price { font-family: 'Cinzel', serif; font-size: 1.85rem; font-weight: 900; margin-bottom: 20px; }
+    .rank-perks { list-style: none; width: 100%; text-align: left; margin-bottom: 22px; display: flex; flex-direction: column; gap: 8px; }
+    .rank-perks li { font-size: 0.87rem; color: var(--muted); display: flex; align-items: flex-start; gap: 7px; line-height: 1.55; }
+    .perk-dot { font-size: 0.65rem; margin-top: 3px; flex-shrink: 0; }
+    .btn-buy {
+      display: block; width: 100%;
+      background: linear-gradient(135deg, var(--sky), var(--skylt));
+      color: #060d14; border: none; cursor: pointer; padding: 11px 0; border-radius: 10px;
+      font-size: 0.92rem; font-weight: 700; font-family: 'DM Sans', sans-serif;
+      text-decoration: none; text-align: center;
+      transition: opacity 0.2s, transform 0.15s;
+      box-shadow: 0 3px 14px rgba(56,189,248,0.22);
+      position: relative; z-index: 1; margin-top: auto;
+      -webkit-font-smoothing: antialiased;
+    }
+    .btn-buy:hover { opacity: 0.86; transform: translateY(-1px); }
+
+    /* ── KEY CARDS ── */
+    .keys-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .key-card {
+      position: relative; overflow: hidden; background: var(--card);
+      border: 1px solid var(--bdr); border-radius: 20px; padding: 32px 28px;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .key-card:hover { transform: translateY(-3px); }
+    .key-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.7; margin-bottom: 14px; }
+
+    /* ── SUPPORT ── */
+    .dc-card { background: var(--card); border: 1px solid var(--bdr); border-radius: 18px; padding: 32px 36px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap; transition: border-color 0.3s, box-shadow 0.3s; }
+    .dc-card:hover { border-color: var(--bdr2); box-shadow: 0 8px 32px rgba(56,189,248,0.06); }
+    .dc-icon { width: 60px; height: 60px; border-radius: 14px; background: rgba(88,101,242,0.2); border: 1px solid rgba(88,101,242,0.35); display: flex; align-items: center; justify-content: center; color: #a5b4fc; flex-shrink: 0; }
+    .dc-title { font-family: 'Cinzel', serif; font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
+    .dc-desc { font-size: 0.93rem; color: var(--muted); line-height: 1.7; }
+    .faq-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+    .faq-item { background: var(--card); border: 1px solid var(--bdr); border-radius: 13px; overflow: hidden; cursor: pointer; transition: border-color 0.2s; }
+    .faq-item:hover, .faq-item.open { border-color: var(--bdr2); }
+    .faq-q { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; font-weight: 500; font-size: 0.97rem; gap: 12px; line-height: 1.55; }
+    .faq-arrow { color: var(--sky); font-size: 1.25rem; flex-shrink: 0; transition: transform 0.3s; }
+    .faq-item.open .faq-arrow { transform: rotate(45deg); }
+    .faq-body { overflow: hidden; max-height: 0; transition: max-height 0.4s ease; }
+    .faq-body p { padding: 0 24px 20px; font-size: 0.93rem; color: var(--muted); line-height: 1.8; }
+
+    /* ── FOOTER ── */
+    footer { background: #080f18; border-top: 1px solid rgba(56,189,248,0.12); padding: 22px 40px; margin-top: 40px; text-align: center; font-size: 0.8rem; color: #4a7a8a; letter-spacing: 0.02em; }
+
+    /* ── HIDDEN ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:1200px) { .ranks-grid { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:900px) { .feat-grid { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:768px) {
+      .nav-links, .nav-right { display: none; }
+      .hamburger { display: flex; }
+      .sect { padding: 60px 24px; }
+      .hero { padding: 60px 24px; }
+      .page-hero { padding: 60px 24px 40px; }
+      .nav-inner { padding: 0 20px; }
+      .dc-card { flex-direction: column; text-align: center; }
+    }
+    @media(max-width:540px) {
+      .ranks-grid { grid-template-columns: 1fr; }
+      .keys-grid { grid-template-columns: 1fr; }
+      .feat-grid { grid-template-columns: 1fr; }
+      .sect { padding: 52px 18px; }
+      .feat-banner { padding: 32px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <div class="nav-logo" onclick="navigate('home')">
+      <span class="c1">⬡</span> Paradox <span class="c2">SMP</span>
+    </div>
+    <div class="nav-links">
+      <button class="nav-link active" onclick="navigate('home')">Home</button>
+      <button class="nav-link" onclick="navigate('store')">Store</button>
+      <button class="nav-link" onclick="navigate('support')">Support</button>
+    </div>
+    <div class="nav-right">
+      <a href="https://discord.gg/YOUR_INVITE_CODE" target="_blank" class="btn-discord-nav">
+        <svg width="17" height="17" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+        <span>Discord</span>
+      </a>
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleMob()">
+      <span class="hl" id="hl1"></span>
+      <span class="hl" id="hl2"></span>
+      <span class="hl" id="hl3"></span>
+    </button>
+  </div>
+  <div class="mob-menu" id="mob-menu">
+    <button class="mob-link" onclick="navigate('home')">Home</button>
+    <button class="mob-link" onclick="navigate('store')">Store</button>
+    <button class="mob-link" onclick="navigate('support')">Support</button>
+    <a href="https://discord.gg/YOUR_INVITE_CODE" target="_blank" class="mob-link" style="color:#a5b4fc;text-decoration:none;gap:8px;">
+      <svg width="17" height="17" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+      Join Discord
+    </a>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div id="page-home" class="page active page-wrap">
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-inner">
+      <div><span class="badge reveal">⚡ Season 3 is Live</span></div>
+      <h1 class="hero-title reveal">A World Beyond<br><span class="gt">Survival.</span></h1>
+      <p class="hero-sub reveal">Paradox SMP is an immersive survival multiplayer experience — featuring custom economies, epic quests, clan warfare, and a thriving community of adventurers.</p>
+      <div class="reveal" style="margin-top:36px">
+        <a href="https://discord.gg/YOUR_INVITE_CODE" target="_blank" class="btn-primary">
+          <svg width="20" height="20" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+          Join Discord
+        </a>
+      </div>
+    </div>
+    <div class="scroll-hint">scroll to explore ↓</div>
+  </section>
+
+  <section class="sect">
+    <div class="sect-label reveal">What We Offer</div>
+    <h2 class="sect-title reveal">Everything You Need to <span class="gt">Thrive</span></h2>
+    <div class="feat-grid">
+      <div class="feat-card reveal"><div class="feat-icon">💰</div><h3 class="feat-title">Player Economy</h3><p class="feat-desc">Trade, sell, and build your wealth with a dynamic player-driven market.</p><div class="card-glow"></div></div>
+      <div class="feat-card reveal"><div class="feat-icon">📜</div><h3 class="feat-title">Epic Quests</h3><p class="feat-desc">Embark on story-driven quests with unique rewards and lore.</p><div class="card-glow"></div></div>
+      <div class="feat-card reveal"><div class="feat-icon">⚔️</div><h3 class="feat-title">PvP Arenas</h3><p class="feat-desc">Test your skills in ranked PvP arenas with seasonal leaderboards.</p><div class="card-glow"></div></div>
+      <div class="feat-card reveal"><div class="feat-icon">🌍</div><h3 class="feat-title">Custom World</h3><p class="feat-desc">Explore a hand-crafted, 30,000 block world rich with secrets.</p><div class="card-glow"></div></div>
+      <div class="feat-card reveal"><div class="feat-icon">🎉</div><h3 class="feat-title">Server Events</h3><p class="feat-desc">Weekly community events, build battles, and holiday specials.</p><div class="card-glow"></div></div>
+      <div class="feat-card reveal"><div class="feat-icon">🏰</div><h3 class="feat-title">Clans</h3><p class="feat-desc">Form or join clans, claim territory, and dominate the leaderboard.</p><div class="card-glow"></div></div>
+    </div>
+  </section>
+</div>
+
+<!-- STORE PAGE -->
+<div id="page-store" class="page page-wrap">
+  <div class="page-hero">
+    <div class="page-hero-glow"></div>
+    <h1 class="page-hero-title reveal">Paradox <span class="gt">Store</span></h1>
+    <p class="page-hero-sub reveal">Support the server and unlock exclusive perks. All purchases are permanent.</p>
+    <div class="notice reveal">🔒 Powered by Tebex — Secure Checkout</div>
+  </div>
+  <section class="sect">
+    <div class="feat-banner reveal">
+      <div class="feat-banner-badge">⭐ Featured Package</div>
+      <h3 class="feat-banner-name">Sovereign Rank</h3>
+      <p class="feat-banner-desc">The ultimate Paradox experience — every perk, every feature, forever.</p>
+      <div class="feat-banner-price">$39.99</div>
+      <a href="https://store.paradoxsmp.net" target="_blank" class="btn-primary">Buy Now →</a>
+    </div>
+
+    <div class="tabs reveal" style="margin-top:48px" id="store-tabs">
+      <button class="tab active" onclick="setTab('All')">All</button>
+      <button class="tab" onclick="setTab('Ranks')">Ranks</button>
+      <button class="tab" onclick="setTab('Keys')">Keys</button>
+    </div>
+
+    <div id="ranks-section">
+      <div class="sect-label reveal" style="margin-bottom:18px">Ranks</div>
+      <div class="ranks-grid">
+        <div class="rank-card reveal">
+          <div class="rank-crown">👑</div>
+          <div class="rank-name" style="color:#7dd3fc">Wanderer</div>
+          <div class="rank-price" style="color:#7dd3fc">$4.99</div>
+          <ul class="rank-perks">
+            <li><span class="perk-dot" style="color:#7dd3fc">✦</span><span>/fly in claimed land</span></li>
+            <li><span class="perk-dot" style="color:#7dd3fc">✦</span><span>Colored chat</span></li>
+            <li><span class="perk-dot" style="color:#7dd3fc">✦</span><span>2 homes</span></li>
+            <li><span class="perk-dot" style="color:#7dd3fc">✦</span><span>Wanderer kit</span></li>
+          </ul>
+          <a href="https://store.paradoxsmp.net" target="_blank" class="btn-buy">Purchase</a>
+          <div class="card-glow" style="background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(125,211,252,0.1),transparent)"></div>
+        </div>
+        <div class="rank-card reveal">
+          <div class="rank-crown">👑</div>
+          <div class="rank-name" style="color:#38bdf8">Explorer</div>
+          <div class="rank-price" style="color:#38bdf8">$9.99</div>
+          <ul class="rank-perks">
+            <li><span class="perk-dot" style="color:#38bdf8">✦</span><span>5 homes</span></li>
+            <li><span class="perk-dot" style="color:#38bdf8">✦</span><span>/nick command</span></li>
+            <li><span class="perk-dot" style="color:#38bdf8">✦</span><span>Particle trails</span></li>
+            <li><span class="perk-dot" style="color:#38bdf8">✦</span><span>Explorer kit</span></li>
+            <li><span class="perk-dot" style="color:#38bdf8">✦</span><span>Priority login</span></li>
+          </ul>
+          <a href="https://store.paradoxsmp.net" target="_blank" class="btn-buy">Purchase</a>
+          <div class="card-glow" style="background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(56,189,248,0.1),transparent)"></div>
+        </div>
+        <div class="rank-card reveal">
+          <div class="rank-crown">👑</div>
+          <div class="rank-name" style="color:#a78bfa">Pathfinder</div>
+          <div class="rank-price" style="color:#a78bfa">$19.99</div>
+          <ul class="rank-perks">
+            <li><span class="perk-dot" style="color:#a78bfa">✦</span><span>10 homes</span></li>
+            <li><span class="perk-dot" style="color:#a78bfa">✦</span><span>Custom join messages</span></li>
+            <li><span class="perk-dot" style="color:#a78bfa">✦</span><span>3 plot claims</span></li>
+            <li><span class="perk-dot" style="color:#a78bfa">✦</span><span>Monthly crate key</span></li>
+            <li><span class="perk-dot" style="color:#a78bfa">✦</span><span>Pathfinder kit</span></li>
+          </ul>
+          <a href="https://store.paradoxsmp.net" target="_blank" class="btn-buy">Purchase</a>
+          <div class="card-glow" style="background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(167,139,250,0.1),transparent)"></div>
+        </div>
+        <div class="rank-card reveal">
+          <div class="rank-crown">👑</div>
+          <div class="rank-name" style="color:#f59e0b">Sovereign</div>
+          <div class="rank-price" style="color:#f59e0b">$39.99</div>
+          <ul class="rank-perks">
+            <li><span class="perk-dot" style="color:#f59e0b">✦</span><span>Unlimited homes</span></li>
+            <li><span class="perk-dot" style="color:#f59e0b">✦</span><span>All cosmetics unlocked</span></li>
+            <li><span class="perk-dot" style="color:#f59e0b">✦</span><span>Priority queue</span></li>
+            <li><span class="perk-dot" style="color:#f59e0b">✦</span><span>VIP Discord role</span></li>
+            <li><span class="perk-dot" style="color:#f59e0b">✦</span><span>Monthly keys</span></li>
+            <li><span class="perk-dot" style="color:#f59e0b">✦</span><span>Sovereign kit</span></li>
+          </ul>
+          <a href="https://store.paradoxsmp.net" target="_blank" class="btn-buy">Purchase</a>
+          <div class="card-glow" style="background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(245,158,11,0.1),transparent)"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="keys-section" style="margin-top:56px">
+      <div class="sect-label reveal" style="margin-bottom:18px">Keys</div>
+      <div class="keys-grid">
+        <div class="key-card reveal">
+          <div style="font-size:2.2rem;margin-bottom:14px">🗝️</div>
+          <div class="rank-name" style="color:#fbbf24">Vote Key x10</div>
+          <p class="key-desc">10 Vote Crate keys — great rewards for new players.</p>
+          <div class="rank-price" style="color:#fbbf24;margin-bottom:20px">$1.99</div>
+          <a href="https://store.paradoxsmp.net" target="_blank" class="btn-buy">Purchase</a>
+        </div>
+        <div class="key-card reveal">
+          <div style="font-size:2.2rem;margin-bottom:14px">🗝️</div>
+          <div class="rank-name" style="color:#f87171">Myth Key x5</div>
+          <p class="key-desc">5 Mythic keys with chances at exclusive gear and rank upgrades.</p>
+          <div class="rank-price" style="color:#f87171;margin-bottom:20px">$8.99</div>
+          <a href="https://store.paradoxsmp.net" target="_blank" class="btn-buy">Purchase</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- SUPPORT PAGE -->
+<div id="page-support" class="page page-wrap">
+  <div class="page-hero">
+    <div class="page-hero-glow"></div>
+    <h1 class="page-hero-title reveal">Support <span class="gt">Hub</span></h1>
+    <p class="page-hero-sub reveal">Our staff team is here to help. Find answers or reach us on Discord.</p>
+  </div>
+  <section class="sect">
+    <div class="sect-label reveal">Get Help</div>
+    <div class="dc-card reveal">
+      <div class="dc-icon">
+        <svg width="34" height="34" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+      </div>
+      <div style="flex:1">
+        <h3 class="dc-title">Discord Support</h3>
+        <p class="dc-desc">Get help from staff and the community. Our team is active 7 days a week.</p>
+      </div>
+      <a href="https://discord.gg/YOUR_INVITE_CODE" target="_blank" class="btn-primary" style="flex-shrink:0;white-space:nowrap">
+        <svg width="18" height="18" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+        Join Discord
+      </a>
+    </div>
+  </section>
+  <section class="sect">
+    <div class="sect-label reveal">Knowledge Base</div>
+    <h2 class="sect-title reveal">Frequently Asked <span class="gt">Questions</span></h2>
+    <div class="faq-list">
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span>How do I connect to the server?</span><span class="faq-arrow">+</span></div><div class="faq-body"><p>Open Minecraft Java Edition, go to Multiplayer > Add Server, and enter: play.paradoxsmp.net. We support 1.20+.</p></div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span>What version does the server run?</span><span class="faq-arrow">+</span></div><div class="faq-body"><p>Paradox SMP runs the latest stable Minecraft Java Edition (1.21). Bedrock is not supported.</p></div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span>I was unfairly banned. What do I do?</span><span class="faq-arrow">+</span></div><div class="faq-body"><p>Submit a ban appeal in our Discord #ban-appeals channel. Include your username and reason you believe the ban was incorrect.</p></div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span>How do I report a cheater or griefer?</span><span class="faq-arrow">+</span></div><div class="faq-body"><p>Use /report &lt;username&gt; in-game or post in #player-reports on Discord with evidence.</p></div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span>Do purchased ranks transfer across seasons?</span><span class="faq-arrow">+</span></div><div class="faq-body"><p>Yes! All ranks are permanent and carry over between seasons.</p></div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span>Can I get a refund on a purchase?</span><span class="faq-arrow">+</span></div><div class="faq-body"><p>All sales are final. Contact us for technical issues with a purchase.</p></div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span>How do I create a clan?</span><span class="faq-arrow">+</span></div><div class="faq-body"><p>Use /clan create &lt;name&gt; in-game. It costs $5,000 in-game currency. Invite with /clan invite &lt;player&gt;.</p></div></div>
+    </div>
+  </section>
+</div>
+
+<footer>© 2026 Paradox SMP. Not affiliated with Mojang or Microsoft.</footer>
+
+<script>
+  // ── SCROLL
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+  });
+
+  // ── REVEAL
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('revealed'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // ── NAVIGATION
+  function navigate(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    const page = document.getElementById('page-' + id);
+    page.classList.add('active');
+    page.classList.remove('page-wrap');
+    void page.offsetWidth;
+    page.classList.add('page-wrap');
+    const idx = ['home','store','support'].indexOf(id);
+    document.querySelectorAll('.nav-link')[idx].classList.add('active');
+    document.getElementById('mob-menu').classList.remove('open');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // re-observe reveals on new page
+    page.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  }
+
+  // ── MOBILE MENU
+  function toggleMob() {
+    document.getElementById('mob-menu').classList.toggle('open');
+  }
+
+  // ── STORE TABS
+  function setTab(tab) {
+    document.querySelectorAll('#store-tabs .tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    const r = document.getElementById('ranks-section');
+    const k = document.getElementById('keys-section');
+    r.style.display = (tab === 'Keys') ? 'none' : 'block';
+    k.style.display = (tab === 'Ranks') ? 'none' : 'block';
+  }
+
+  // ── FAQ
+  function toggleFaq(el) {
+    const body = el.querySelector('.faq-body');
+    const isOpen = el.classList.contains('open');
+    el.classList.toggle('open');
+    body.style.maxHeight = isOpen ? '0' : body.scrollHeight + 'px';
+  }
+</script>
+</body>
+</html>
