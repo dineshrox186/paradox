@@ -1,825 +1,828 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Paradox SMP</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { width: 100%; min-height: 100vh; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Paradox SMP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;
+  font-size:16px;
+  color:#dff5e8;
+  background:#060e08;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
 
-    :root {
-      --bg:      #071a0e;
-      --card:    #0b2213;
-      --sky:     #3dd68c;
-      --skylt:   #6ee7b7;
-      --water:   #22d3ee;
-      --waterlt: #67e8f9;
-      --text:    #e8fdf2;
-      --muted:   #5a9a72;
-      --bdr:     rgba(61,214,140,0.16);
-      --bdr2:    rgba(61,214,140,0.38);
-      --nh:      68px;
-    }
+:root{
+  --green:#3ecf6e;
+  --teal:#1fc8d4;
+  --dark:#060e08;
+  --card:#0d1f12;
+  --border:#1e3825;
+  --muted:#5c8a68;
+  --text:#dff5e8;
+  --nh:62px;
+}
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: 17px;
-      font-weight: 400;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-rendering: optimizeLegibility;
-      overflow-x: hidden;
-    }
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--dark)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--sky); border-radius: 3px; }
+/* ── FIXED BACKGROUNDS ── */
+.bg-layer{
+  position:fixed;inset:0;width:100%;height:100%;
+  z-index:0;pointer-events:none;
+  opacity:0;transition:opacity 0.4s ease;
+}
+.bg-layer.on{opacity:1}
 
-    /* ── REVEAL ── */
-    .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.55s ease, transform 0.55s ease; }
-    .revealed { opacity: 1; transform: none; }
+/* ── NAVBAR ── */
+nav{
+  position:fixed;top:0;left:0;width:100%;height:var(--nh);z-index:100;
+  background:transparent;
+  border-bottom:1px solid transparent;
+  transition:background 0.3s,border-color 0.3s;
+}
+nav.solid{
+  background:rgba(6,14,8,0.85);
+  backdrop-filter:blur(16px);
+  border-bottom-color:var(--border);
+}
+.nav-wrap{
+  display:flex;align-items:center;height:100%;
+  padding:0 40px;gap:16px;
+}
+.logo{
+  font-family:'Oxanium',sans-serif;
+  font-size:1.05rem;font-weight:800;
+  letter-spacing:0.06em;cursor:pointer;
+  color:var(--text);white-space:nowrap;
+  margin-right:auto;
+}
+.logo span{color:var(--green)}
+.nav-links{display:flex;gap:2px}
+.nl{
+  background:none;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:500;
+  color:var(--muted);padding:7px 14px;border-radius:6px;
+  transition:color 0.15s,background 0.15s;letter-spacing:0.01em;
+}
+.nl:hover{color:var(--text);background:rgba(255,255,255,0.05)}
+.nl.on{color:var(--green)}
+.nav-dc{
+  display:flex;align-items:center;gap:6px;
+  background:none;border:1px solid var(--border);
+  color:var(--muted);padding:7px 14px;border-radius:6px;
+  font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;
+  text-decoration:none;transition:border-color 0.15s,color 0.15s;
+}
+.nav-dc:hover{border-color:var(--muted);color:var(--text)}
+.burger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:4px;margin-left:auto}
+.bline{display:block;width:22px;height:1.5px;background:var(--text)}
+.mob{
+  position:fixed;top:var(--nh);left:0;width:100%;
+  background:rgba(6,14,8,0.96);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  display:flex;flex-direction:column;gap:2px;padding:0 20px;
+  max-height:0;overflow:hidden;transition:max-height 0.35s,padding 0.25s;z-index:99;
+}
+.mob.open{max-height:300px;padding:12px 20px}
+.ml{
+  background:none;border:none;cursor:pointer;text-align:left;
+  font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:500;
+  color:var(--muted);padding:11px 8px;border-radius:6px;
+  text-decoration:none;display:flex;align-items:center;gap:8px;
+  transition:color 0.15s,background 0.15s;
+}
+.ml:hover{color:var(--text);background:rgba(255,255,255,0.04)}
 
-    /* ── GRADIENT TEXT ── */
-    .gt {
-      background: linear-gradient(135deg, var(--sky), var(--water));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      display: inline-block;
-    }
+/* ── PAGES ── */
+.page{display:none;position:relative;z-index:1;padding-top:var(--nh);min-height:100vh}
+.page.on{display:block;animation:fadein 0.28s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
-    /* ── PAGE FADE ── */
-    .page-wrap { animation: pagefade 0.32s ease; }
-    @keyframes pagefade { from { opacity:0; transform:translateY(9px); } to { opacity:1; transform:none; } }
+/* ── REVEAL ── */
+.r{opacity:0;transform:translateY(18px);transition:opacity 0.5s ease,transform 0.5s ease}
+.r.in{opacity:1;transform:none}
 
-    /* ── NAVBAR ── */
-    .navbar {
-      position: fixed; top: 0; left: 0; width: 100%; z-index: 200;
-      height: var(--nh);
-      background: transparent;
-      border-bottom: 1px solid transparent;
-      transition: background 0.35s, border-color 0.35s, backdrop-filter 0.35s;
-    }
-    .navbar.scrolled {
-      background: rgba(7,26,14,0.72);
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
-      border-bottom-color: var(--bdr);
-    }
-    .nav-inner {
-      width: 100%; height: 100%;
-      display: flex; align-items: center;
-      padding: 0 48px; gap: 24px;
-    }
-    .nav-logo {
-      font-family: 'Oxanium', sans-serif;
-      font-size: 1.18rem; font-weight: 800;
-      cursor: pointer; white-space: nowrap; letter-spacing: 0.04em; user-select: none;
-      text-shadow: 0 0 24px rgba(61,214,140,0.45);
-    }
-    .nav-logo .c1 { color: var(--skylt); }
-    .nav-logo .c2 { color: var(--water); }
-    .nav-links { display: flex; gap: 2px; margin: 0 auto; }
-    .nav-link {
-      background: none; border: none; cursor: pointer;
-      font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 500;
-      color: rgba(232,253,242,0.55); padding: 8px 18px; border-radius: 9px;
-      transition: color 0.2s, background 0.2s;
-      letter-spacing: 0.01em;
-    }
-    .nav-link:hover { color: var(--text); background: rgba(61,214,140,0.09); }
-    .nav-link.active { color: var(--sky); background: rgba(61,214,140,0.08); }
-    .nav-right { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
-    .btn-discord-nav {
-      display: flex; align-items: center; gap: 7px;
-      background: rgba(88,101,242,0.18); color: #a5b4fc;
-      border: 1px solid rgba(88,101,242,0.35); padding: 8px 16px; border-radius: 9px;
-      font-size: 0.88rem; font-weight: 600; text-decoration: none;
-      transition: background 0.2s, transform 0.15s;
-      font-family: 'Inter', sans-serif;
-    }
-    .btn-discord-nav:hover { background: rgba(88,101,242,0.32); transform: translateY(-1px); }
-    .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; margin-left: auto; }
-    .hl { display: block; width: 24px; height: 2px; background: var(--text); border-radius: 2px; transition: transform 0.3s, opacity 0.3s; }
-    .mob-menu {
-      position: fixed; top: var(--nh); left: 0; width: 100%;
-      background: rgba(7,26,14,0.97); backdrop-filter: blur(20px);
-      display: flex; flex-direction: column; gap: 4px;
-      padding: 0 20px; max-height: 0; overflow: hidden;
-      transition: max-height 0.4s ease, padding 0.3s;
-      border-bottom: 1px solid transparent; z-index: 199;
-    }
-    .mob-menu.open { max-height: 360px; padding: 16px 20px; border-bottom-color: var(--bdr); }
-    .mob-link {
-      background: none; border: none; cursor: pointer; text-align: left;
-      font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 500;
-      color: rgba(232,253,242,0.55); padding: 12px 8px; border-radius: 8px;
-      text-decoration: none; display: flex; align-items: center;
-      transition: color 0.2s, background 0.2s;
-    }
-    .mob-link:hover { color: var(--text); background: rgba(61,214,140,0.07); }
+/* ── HERO ── */
+.hero{
+  min-height:calc(100vh - var(--nh));
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:80px 40px 60px;
+}
+.tag{
+  display:inline-flex;align-items:center;gap:7px;
+  border:1px solid var(--border);
+  color:var(--muted);padding:5px 14px;border-radius:4px;
+  font-size:0.78rem;font-weight:600;letter-spacing:0.1em;
+  text-transform:uppercase;margin-bottom:28px;
+}
+.tag-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+h1{
+  font-family:'Oxanium',sans-serif;
+  font-size:clamp(3rem,6vw,6.5rem);
+  font-weight:800;line-height:1.04;
+  letter-spacing:-0.01em;
+  color:var(--text);
+  margin-bottom:24px;
+}
+h1 em{font-style:normal;color:var(--green)}
+.hero-sub{
+  font-size:clamp(1rem,1.4vw,1.15rem);
+  color:var(--muted);line-height:1.8;
+  max-width:560px;margin:0 auto 40px;
+}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--green);color:#060e08;
+  padding:12px 28px;border-radius:6px;
+  font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:600;
+  text-decoration:none;border:none;cursor:pointer;
+  transition:opacity 0.15s,transform 0.15s;
+  letter-spacing:0.01em;
+}
+.btn:hover{opacity:0.85;transform:translateY(-1px)}
+.btn-ghost{
+  background:none;color:var(--muted);border:1px solid var(--border);
+}
+.btn-ghost:hover{color:var(--text);border-color:var(--muted);background:none}
 
-    /* ── BTN PRIMARY ── */
-    .btn-primary {
-      background: linear-gradient(135deg, var(--sky), var(--water));
-      color: #071a0e; border: none; cursor: pointer;
-      padding: 13px 32px; border-radius: 13px;
-      font-size: 1rem; font-weight: 700; font-family: 'Inter', sans-serif;
-      text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 24px rgba(61,214,140,0.32);
-      letter-spacing: 0.01em;
-    }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 36px rgba(61,214,140,0.5); }
+/* ── SECTIONS ── */
+.sect{padding:64px 40px;position:relative;z-index:1}
+.label{
+  font-size:0.72rem;font-weight:600;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:8px;
+}
+h2{
+  font-family:'Oxanium',sans-serif;
+  font-size:clamp(1.7rem,2.8vw,2.6rem);
+  font-weight:700;margin-bottom:36px;line-height:1.15;
+  color:var(--text);
+}
+h2 em{font-style:normal;color:var(--green)}
 
-    /* ── PAGE ── */
-    .page { width: 100%; padding-top: var(--nh); min-height: 100vh; }
+/* ── GRID CARDS ── */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;border:1px solid var(--border)}
+.gc{
+  background:var(--card);padding:28px 24px;
+  border:none;
+  transition:background 0.2s;
+}
+.gc:hover{background:#111f16}
+.gc-icon{font-size:1.5rem;margin-bottom:14px}
+.gc-title{font-family:'Oxanium',sans-serif;font-size:1rem;font-weight:700;margin-bottom:8px;color:var(--text)}
+.gc-desc{font-size:0.9rem;color:var(--muted);line-height:1.7}
 
-    /* ── MINECRAFT SKY+LAND HERO ── */
-    .hero {
-      position: relative; width: 100%;
-      min-height: calc(100vh - var(--nh));
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center; padding: 80px 48px; overflow: hidden;
-    }
+/* ── PAGE HEADER ── */
+.ph{
+  padding:64px 40px 48px;border-bottom:1px solid var(--border);
+  position:relative;z-index:1;
+}
+.ph h1{font-size:clamp(2.4rem,4.5vw,4.2rem);margin-bottom:10px}
+.ph p{font-size:1rem;color:var(--muted);max-width:480px;line-height:1.7}
+.ph-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  border:1px solid var(--border);color:var(--muted);
+  padding:5px 12px;border-radius:4px;
+  font-size:0.75rem;font-weight:500;margin-top:16px;
+}
 
-    /* SVG Minecraft background */
-    .hero-bg {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      z-index: 0; pointer-events: none;
-    }
+/* ── FEATURE BANNER ── */
+.banner{
+  border:1px solid var(--border);border-radius:0;
+  padding:40px;margin-bottom:48px;
+  display:flex;align-items:center;justify-content:space-between;gap:32px;
+  flex-wrap:wrap;background:rgba(62,207,110,0.04);
+}
+.banner-label{font-size:0.72rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--green);margin-bottom:6px}
+.banner-name{font-family:'Oxanium',sans-serif;font-size:1.6rem;font-weight:800;margin-bottom:6px}
+.banner-desc{font-size:0.9rem;color:var(--muted);line-height:1.65;max-width:400px}
+.banner-price{font-family:'Oxanium',sans-serif;font-size:2.6rem;font-weight:800;color:var(--green);white-space:nowrap}
 
-    /* pixel-art cloud flicker */
-    @keyframes cloud-drift { 0% { transform: translateX(0); } 100% { transform: translateX(60px); } }
-    .cloud-a { animation: cloud-drift 28s linear infinite alternate; }
-    .cloud-b { animation: cloud-drift 36s linear infinite alternate-reverse; }
+/* ── TABS ── */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:32px}
+.tab{
+  background:none;border:none;border-bottom:2px solid transparent;
+  color:var(--muted);padding:10px 18px;
+  font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:500;cursor:pointer;
+  margin-bottom:-1px;transition:color 0.15s,border-color 0.15s;
+}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--green);border-bottom-color:var(--green)}
 
-    .hero-glow {
-      position: absolute; width: 900px; height: 600px; border-radius: 50%;
-      background: radial-gradient(ellipse, rgba(61,214,140,0.11) 0%, transparent 70%);
-      top: -100px; left: 50%; transform: translateX(-50%); pointer-events: none; z-index: 1;
-    }
-    .hero-inner { position: relative; z-index: 2; width: 100%; }
+/* ── RANKS ── */
+.ranks{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;border:1px solid var(--border);margin-bottom:1px}
+.rcard{
+  background:var(--card);padding:24px 20px;
+  display:flex;flex-direction:column;
+}
+.rcard:hover{background:#111f16}
+.rc-name{font-family:'Oxanium',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:4px}
+.rc-price{font-family:'Oxanium',sans-serif;font-size:1.7rem;font-weight:800;margin-bottom:18px}
+.rc-perks{list-style:none;flex:1;display:flex;flex-direction:column;gap:7px;margin-bottom:20px}
+.rc-perks li{font-size:0.86rem;color:var(--muted);display:flex;align-items:flex-start;gap:6px;line-height:1.5}
+.rc-perks li::before{content:'—';color:var(--border);flex-shrink:0;font-size:0.75rem;margin-top:1px}
+.buy{
+  display:block;width:100%;text-align:center;
+  background:var(--green);color:#060e08;
+  padding:10px;border-radius:4px;
+  font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:600;
+  text-decoration:none;transition:opacity 0.15s;border:none;cursor:pointer;
+}
+.buy:hover{opacity:0.82}
 
-    .badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(61,214,140,0.12); border: 1px solid rgba(61,214,140,0.3);
-      color: var(--sky); padding: 7px 18px; border-radius: 99px;
-      font-size: 0.86rem; font-weight: 600; letter-spacing: 0.06em; margin-bottom: 28px;
-      animation: badge-pulse 3s ease-in-out infinite;
-    }
-    @keyframes badge-pulse {
-      0%,100% { box-shadow: 0 0 0 0 rgba(61,214,140,0.22); }
-      50% { box-shadow: 0 0 0 8px rgba(61,214,140,0); }
-    }
-    .hero-title {
-      font-family: 'Oxanium', sans-serif;
-      font-size: clamp(3rem, 6.5vw, 7rem);
-      font-weight: 800; line-height: 1.05; margin-bottom: 26px;
-      letter-spacing: -0.01em;
-      color: var(--text);
-      text-shadow: 0 2px 32px rgba(61,214,140,0.18);
-    }
-    .hero-sub {
-      font-size: clamp(1.05rem, 1.5vw, 1.22rem);
-      color: rgba(232,253,242,0.72);
-      line-height: 1.82; font-weight: 400;
-      margin-bottom: 0;
-      max-width: 620px;
-      margin-left: auto; margin-right: auto;
-    }
-    .scroll-hint {
-      position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
-      font-size: 0.76rem; color: var(--muted); letter-spacing: 0.12em;
-      opacity: 0.45; animation: bob 2.5s ease-in-out infinite; pointer-events: none;
-    }
-    @keyframes bob {
-      0%,100% { transform: translateX(-50%) translateY(0); }
-      50% { transform: translateX(-50%) translateY(7px); }
-    }
+/* ── KEYS ── */
+.keys{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;border:1px solid var(--border)}
+.kcard{
+  background:var(--card);padding:28px 24px;
+  display:flex;flex-direction:column;align-items:flex-start;
+}
+.kcard:hover{background:#111f16}
+.kc-icon{font-size:1.4rem;margin-bottom:12px}
+.kc-name{font-family:'Oxanium',sans-serif;font-size:1rem;font-weight:700;margin-bottom:4px}
+.kc-desc{font-size:0.88rem;color:var(--muted);line-height:1.65;margin-bottom:14px;flex:1}
+.kc-price{font-family:'Oxanium',sans-serif;font-size:1.5rem;font-weight:800;color:var(--green);margin-bottom:16px}
 
-    /* ── SECTIONS ── */
-    .sect { width: 100%; padding: 72px 48px; }
-    .sect-label {
-      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.22em;
-      text-transform: uppercase; color: var(--sky); margin-bottom: 10px;
-    }
-    .sect-title {
-      font-family: 'Oxanium', sans-serif;
-      font-size: clamp(1.85rem, 3vw, 2.9rem);
-      font-weight: 700; margin-bottom: 44px; line-height: 1.2;
-      color: var(--text);
-    }
+/* ── SUPPORT ── */
+.dc-row{
+  border:1px solid var(--border);
+  padding:28px 32px;
+  display:flex;align-items:center;gap:24px;flex-wrap:wrap;
+  background:var(--card);margin-bottom:48px;
+}
+.dc-ico{
+  width:48px;height:48px;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  color:#7289da;flex-shrink:0;
+}
+.dc-title{font-family:'Oxanium',sans-serif;font-size:1rem;font-weight:700;margin-bottom:4px}
+.dc-desc{font-size:0.88rem;color:var(--muted);line-height:1.6}
+.faqs{display:flex;flex-direction:column}
+.fi{
+  border-bottom:1px solid var(--border);cursor:pointer;
+  transition:background 0.15s;
+}
+.fi:first-child{border-top:1px solid var(--border)}
+.fi:hover{background:rgba(255,255,255,0.02)}
+.fq{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:16px 0;font-size:0.95rem;font-weight:500;gap:12px;
+}
+.fa-arrow{color:var(--muted);font-size:1rem;transition:transform 0.25s;flex-shrink:0}
+.fi.open .fa-arrow{transform:rotate(45deg)}
+.fb{overflow:hidden;max-height:0;transition:max-height 0.35s ease}
+.fb p{padding:0 0 16px;font-size:0.88rem;color:var(--muted);line-height:1.75}
 
-    /* ── FEATURES ── */
-    .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .feat-card {
-      position: relative; overflow: hidden; background: var(--card);
-      border: 1px solid var(--bdr); border-radius: 18px; padding: 32px 28px;
-      text-align: left; transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s; cursor: default;
-    }
-    .feat-card:hover { border-color: var(--bdr2); transform: translateY(-4px); box-shadow: 0 14px 44px rgba(61,214,140,0.1); }
-    .feat-card:hover .card-glow { opacity: 1; }
-    .card-glow { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.4s; background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(61,214,140,0.08), transparent); }
-    .feat-icon { font-size: 2rem; margin-bottom: 16px; }
-    .feat-title {
-      font-family: 'Oxanium', sans-serif;
-      font-size: 1.08rem; font-weight: 700; margin-bottom: 10px; color: var(--text);
-    }
-    .feat-desc { font-size: 0.95rem; color: var(--muted); line-height: 1.75; }
+/* ── FOOTER ── */
+footer{
+  border-top:1px solid var(--border);padding:20px 40px;
+  text-align:center;font-size:0.78rem;color:var(--muted);
+  letter-spacing:0.03em;position:relative;z-index:1;
+}
 
-    /* ── PAGE HERO ── */
-    .page-hero {
-      position: relative; width: 100%; padding: 80px 48px 56px;
-      text-align: center; overflow: hidden;
-      background: linear-gradient(180deg, rgba(34,211,238,0.04) 0%, transparent 100%);
-    }
-    .page-hero-glow { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 70% at 50% 40%, rgba(61,214,140,0.08), transparent); pointer-events: none; }
-    .page-hero-title {
-      font-family: 'Oxanium', sans-serif;
-      font-size: clamp(2.6rem, 5vw, 5rem);
-      font-weight: 800; margin-bottom: 14px; position: relative;
-      color: var(--text);
-    }
-    .page-hero-sub { color: rgba(232,253,242,0.65); font-size: 1.08rem; max-width: 560px; margin: 0 auto 20px; position: relative; line-height: 1.78; }
-    .notice { display: inline-flex; align-items: center; gap: 8px; background: rgba(61,214,140,0.07); border: 1px solid var(--bdr); padding: 8px 20px; border-radius: 99px; font-size: 0.83rem; color: var(--muted); position: relative; }
+/* ── CLOUD DRIFT ── */
+@keyframes drift{0%{transform:translateX(0)}100%{transform:translateX(50px)}}
+.ca{animation:drift 30s linear infinite alternate}
+.cb{animation:drift 42s linear infinite alternate-reverse}
 
-    /* ── FEATURED BANNER ── */
-    .feat-banner {
-      background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(61,214,140,0.04));
-      border: 1px solid rgba(245,158,11,0.3); border-radius: 20px; padding: 52px 48px; text-align: center;
-    }
-    .feat-banner-badge { display: inline-block; background: rgba(245,158,11,0.14); color: #fbbf24; padding: 5px 16px; border-radius: 99px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.07em; margin-bottom: 14px; }
-    .feat-banner-name { font-family: 'Oxanium', sans-serif; font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; color: #f59e0b; }
-    .feat-banner-desc { color: rgba(232,253,242,0.65); margin-bottom: 18px; font-size: 1.02rem; line-height: 1.72; }
-    .feat-banner-price { font-family: 'Oxanium', sans-serif; font-size: 3rem; font-weight: 800; color: #f59e0b; margin-bottom: 28px; }
+/* ── NETHER LAVA PULSE ── */
+@keyframes lp{0%,100%{opacity:1}50%{opacity:0.55}}
+.lp{animation:lp 2.6s ease-in-out infinite}
+.lp2{animation:lp 1.9s ease-in-out infinite 0.7s}
 
-    /* ── TABS ── */
-    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
-    .tab { background: rgba(255,255,255,0.04); border: 1px solid var(--bdr); color: var(--muted); padding: 9px 22px; border-radius: 10px; cursor: pointer; font-size: 0.91rem; font-weight: 500; font-family: 'Inter', sans-serif; transition: all 0.2s; }
-    .tab:hover { color: var(--text); background: rgba(61,214,140,0.08); }
-    .tab.active { background: rgba(61,214,140,0.12); border-color: var(--bdr2); color: var(--sky); }
+/* ── NIGHT STAR TWINKLE ── */
+@keyframes tw{0%,100%{opacity:0.85}50%{opacity:0.15}}
+.tw1{animation:tw 3.2s ease-in-out infinite}
+.tw2{animation:tw 4.8s ease-in-out infinite 1s}
+.tw3{animation:tw 2.6s ease-in-out infinite 0.4s}
 
-    /* ── RANK CARDS ── */
-    .ranks-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 8px; }
-    .rank-card {
-      position: relative; overflow: hidden; background: var(--card);
-      border: 1px solid var(--bdr); border-radius: 20px; padding: 28px 22px;
-      display: flex; flex-direction: column; align-items: center; text-align: center;
-      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
-    }
-    .rank-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(61,214,140,0.1); }
-    .rank-card:hover .card-glow { opacity: 1; }
-    .rank-crown { font-size: 2.2rem; margin-bottom: 12px; }
-    .rank-name { font-family: 'Oxanium', sans-serif; font-size: 1.28rem; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.02em; }
-    .rank-price { font-family: 'Oxanium', sans-serif; font-size: 1.88rem; font-weight: 800; margin-bottom: 20px; }
-    .rank-perks { list-style: none; width: 100%; text-align: left; margin-bottom: 22px; display: flex; flex-direction: column; gap: 8px; }
-    .rank-perks li { font-size: 0.9rem; color: var(--muted); display: flex; align-items: flex-start; gap: 7px; line-height: 1.55; }
-    .perk-dot { font-size: 0.65rem; margin-top: 3px; flex-shrink: 0; }
-    .btn-buy {
-      display: block; width: 100%;
-      background: linear-gradient(135deg, var(--sky), var(--water));
-      color: #071a0e; border: none; cursor: pointer; padding: 11px 0; border-radius: 10px;
-      font-size: 0.94rem; font-weight: 700; font-family: 'Inter', sans-serif;
-      text-decoration: none; text-align: center;
-      transition: opacity 0.2s, transform 0.15s;
-      box-shadow: 0 3px 14px rgba(61,214,140,0.24);
-      position: relative; z-index: 1; margin-top: auto;
-    }
-    .btn-buy:hover { opacity: 0.86; transform: translateY(-1px); }
-
-    /* ── KEY CARDS ── */
-    .keys-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-    .key-card {
-      position: relative; overflow: hidden; background: var(--card);
-      border: 1px solid var(--bdr); border-radius: 20px; padding: 32px 28px;
-      display: flex; flex-direction: column; align-items: center; text-align: center;
-      transition: border-color 0.3s, transform 0.3s;
-    }
-    .key-card:hover { transform: translateY(-3px); }
-    .key-desc { font-size: 0.93rem; color: var(--muted); line-height: 1.72; margin-bottom: 14px; }
-
-    /* ── SUPPORT ── */
-    .dc-card { background: var(--card); border: 1px solid var(--bdr); border-radius: 18px; padding: 32px 36px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap; transition: border-color 0.3s, box-shadow 0.3s; }
-    .dc-card:hover { border-color: var(--bdr2); box-shadow: 0 8px 32px rgba(61,214,140,0.07); }
-    .dc-icon { width: 60px; height: 60px; border-radius: 14px; background: rgba(88,101,242,0.2); border: 1px solid rgba(88,101,242,0.35); display: flex; align-items: center; justify-content: center; color: #a5b4fc; flex-shrink: 0; }
-    .dc-title { font-family: 'Oxanium', sans-serif; font-size: 1.18rem; font-weight: 700; margin-bottom: 6px; }
-    .dc-desc { font-size: 0.95rem; color: var(--muted); line-height: 1.72; }
-    .faq-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
-    .faq-item { background: var(--card); border: 1px solid var(--bdr); border-radius: 13px; overflow: hidden; cursor: pointer; transition: border-color 0.2s; }
-    .faq-item:hover, .faq-item.open { border-color: var(--bdr2); }
-    .faq-q { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; font-weight: 500; font-size: 1rem; gap: 12px; line-height: 1.55; }
-    .faq-arrow { color: var(--sky); font-size: 1.25rem; flex-shrink: 0; transition: transform 0.3s; }
-    .faq-item.open .faq-arrow { transform: rotate(45deg); }
-    .faq-body { overflow: hidden; max-height: 0; transition: max-height 0.4s ease; }
-    .faq-body p { padding: 0 24px 20px; font-size: 0.95rem; color: var(--muted); line-height: 1.82; }
-
-    /* ── FOOTER ── */
-    footer { background: #050f08; border-top: 1px solid rgba(61,214,140,0.12); padding: 22px 40px; margin-top: 40px; text-align: center; font-size: 0.82rem; color: #3a7a52; letter-spacing: 0.02em; }
-
-    /* ── HIDDEN ── */
-    .page { display: none; }
-    .page.active { display: block; }
-
-    /* ── RESPONSIVE ── */
-    @media(max-width:1200px) { .ranks-grid { grid-template-columns: repeat(2,1fr); } }
-    @media(max-width:900px) { .feat-grid { grid-template-columns: repeat(2,1fr); } }
-    @media(max-width:768px) {
-      .nav-links, .nav-right { display: none; }
-      .hamburger { display: flex; }
-      .sect { padding: 60px 24px; }
-      .hero { padding: 60px 24px; }
-      .page-hero { padding: 60px 24px 40px; }
-      .nav-inner { padding: 0 20px; }
-      .dc-card { flex-direction: column; text-align: center; }
-    }
-    @media(max-width:540px) {
-      .ranks-grid { grid-template-columns: 1fr; }
-      .keys-grid { grid-template-columns: 1fr; }
-      .feat-grid { grid-template-columns: 1fr; }
-      .sect { padding: 52px 18px; }
-      .feat-banner { padding: 32px 18px; }
-    }
-  </style>
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){.ranks{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.grid-3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){
+  .nav-links,.nav-dc{display:none}
+  .burger{display:flex}
+  .sect,.ph{padding:52px 20px}
+  .hero{padding:60px 20px 48px}
+  .banner{flex-direction:column;align-items:flex-start;gap:20px}
+}
+@media(max-width:560px){
+  .ranks{grid-template-columns:1fr}
+  .keys{grid-template-columns:1fr}
+  .grid-3{grid-template-columns:1fr}
+  .sect{padding:44px 16px}
+}
+</style>
 </head>
 <body>
 
-<!-- NAVBAR -->
-<nav class="navbar" id="navbar">
-  <div class="nav-inner">
-    <div class="nav-logo" onclick="navigate('home')">
-      <span class="c1">⬡</span> Paradox <span class="c2">SMP</span>
-    </div>
+<!-- ══════════════════════════════════════════
+     BACKGROUND LAYER 1 — HOME
+     Day overworld: sky, clouds, sun, trees, water
+══════════════════════════════════════════ -->
+<svg id="bh" class="bg-layer on" viewBox="0 0 1440 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none">
+  <defs>
+    <linearGradient id="hSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d4f8a"/>
+      <stop offset="60%" stop-color="#2e85be"/>
+      <stop offset="100%" stop-color="#4fadd4"/>
+    </linearGradient>
+    <linearGradient id="hGrass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4a9e3f"/>
+      <stop offset="100%" stop-color="#376e2e"/>
+    </linearGradient>
+    <linearGradient id="hDirt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7c5230"/>
+      <stop offset="100%" stop-color="#5a3c20"/>
+    </linearGradient>
+    <linearGradient id="hWater" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1565c0" stop-opacity="0.92"/>
+      <stop offset="100%" stop-color="#0d47a1" stop-opacity="0.92"/>
+    </linearGradient>
+    <linearGradient id="hStone" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6e6e6e"/>
+      <stop offset="100%" stop-color="#4a4a4a"/>
+    </linearGradient>
+  </defs>
+  <!-- Sky -->
+  <rect width="1440" height="900" fill="url(#hSky)"/>
+  <!-- Sun (pixel) -->
+  <rect x="1290" y="52" width="8" height="8" fill="#fffde7"/>
+  <rect x="1282" y="60" width="8" height="8" fill="#fff59d"/>
+  <rect x="1298" y="60" width="8" height="8" fill="#fff59d"/>
+  <rect x="1274" y="68" width="48" height="32" fill="#ffee58"/>
+  <rect x="1282" y="100" width="8" height="8" fill="#fff59d"/>
+  <rect x="1298" y="100" width="8" height="8" fill="#fff59d"/>
+  <rect x="1290" y="108" width="8" height="8" fill="#fffde7"/>
+  <!-- Clouds A -->
+  <g class="ca">
+    <rect x="60" y="90" width="16" height="8" fill="#cff"/><rect x="68" y="82" width="32" height="8" fill="#e8ffff"/><rect x="76" y="74" width="24" height="8" fill="#fff"/><rect x="60" y="90" width="56" height="8" fill="#cff"/>
+    <rect x="420" y="118" width="16" height="8" fill="#cff"/><rect x="428" y="110" width="40" height="8" fill="#e8ffff"/><rect x="436" y="102" width="32" height="8" fill="#fff"/><rect x="420" y="118" width="64" height="8" fill="#cff"/>
+    <rect x="860" y="72" width="16" height="8" fill="#cff"/><rect x="868" y="64" width="40" height="8" fill="#e8ffff"/><rect x="876" y="56" width="32" height="8" fill="#fff"/><rect x="860" y="72" width="64" height="8" fill="#cff"/>
+    <rect x="1180" y="104" width="16" height="8" fill="#cff"/><rect x="1188" y="96" width="32" height="8" fill="#e8ffff"/><rect x="1196" y="88" width="24" height="8" fill="#fff"/><rect x="1180" y="104" width="56" height="8" fill="#cff"/>
+  </g>
+  <!-- Clouds B -->
+  <g class="cb">
+    <rect x="200" y="148" width="16" height="8" fill="#cdf"/><rect x="208" y="140" width="32" height="8" fill="#e0f0ff"/><rect x="216" y="132" width="24" height="8" fill="#fff"/><rect x="200" y="148" width="48" height="8" fill="#cdf"/>
+    <rect x="640" y="128" width="16" height="8" fill="#cdf"/><rect x="648" y="120" width="40" height="8" fill="#e0f0ff"/><rect x="656" y="112" width="32" height="8" fill="#fff"/><rect x="640" y="128" width="64" height="8" fill="#cdf"/>
+    <rect x="1060" y="150" width="16" height="8" fill="#cdf"/><rect x="1068" y="142" width="32" height="8" fill="#e0f0ff"/><rect x="1076" y="134" width="24" height="8" fill="#fff"/><rect x="1060" y="150" width="48" height="8" fill="#cdf"/>
+  </g>
+  <!-- Water (left) -->
+  <rect x="0" y="628" width="180" height="272" fill="url(#hWater)"/>
+  <rect x="0" y="620" width="32" height="8" fill="#1e88e5"/><rect x="32" y="628" width="32" height="8" fill="#1e88e5"/><rect x="64" y="620" width="32" height="8" fill="#1e88e5"/><rect x="96" y="628" width="32" height="8" fill="#1e88e5"/><rect x="128" y="620" width="32" height="8" fill="#1e88e5"/><rect x="160" y="628" width="20" height="8" fill="#1e88e5"/>
+  <rect x="178" y="616" width="16" height="12" fill="#6d4c41"/>
+  <!-- Land -->
+  <rect x="180" y="608" width="1260" height="20" fill="url(#hGrass)"/>
+  <rect x="180" y="628" width="1260" height="156" fill="url(#hDirt)"/>
+  <rect x="180" y="784" width="1260" height="116" fill="url(#hStone)"/>
+  <!-- Terrain bumps -->
+  <rect x="320" y="576" width="32" height="32" fill="#4a9e3f"/><rect x="320" y="608" width="32" height="20" fill="#7c5230"/>
+  <rect x="352" y="584" width="32" height="24" fill="#4a9e3f"/><rect x="352" y="608" width="32" height="20" fill="#7c5230"/>
+  <rect x="700" y="576" width="32" height="32" fill="#4a9e3f"/><rect x="700" y="608" width="32" height="20" fill="#7c5230"/>
+  <rect x="732" y="584" width="32" height="24" fill="#4a9e3f"/><rect x="732" y="608" width="32" height="20" fill="#7c5230"/>
+  <rect x="1080" y="576" width="32" height="32" fill="#4a9e3f"/><rect x="1080" y="608" width="32" height="20" fill="#7c5230"/>
+  <!-- Trees -->
+  <rect x="260" y="504" width="8" height="104" fill="#5d4037"/>
+  <rect x="236" y="464" width="56" height="16" fill="#2e7d32"/><rect x="228" y="480" width="72" height="16" fill="#388e3c"/><rect x="236" y="496" width="56" height="16" fill="#2e7d32"/><rect x="244" y="512" width="40" height="8" fill="#1b5e20"/>
+  <rect x="500" y="516" width="8" height="92" fill="#5d4037"/>
+  <rect x="476" y="480" width="56" height="16" fill="#2e7d32"/><rect x="468" y="496" width="72" height="16" fill="#388e3c"/><rect x="476" y="512" width="56" height="16" fill="#2e7d32"/>
+  <rect x="820" y="496" width="8" height="112" fill="#5d4037"/>
+  <rect x="788" y="448" width="72" height="16" fill="#2e7d32"/><rect x="780" y="464" width="88" height="16" fill="#388e3c"/><rect x="788" y="480" width="72" height="16" fill="#388e3c"/><rect x="796" y="496" width="56" height="16" fill="#2e7d32"/><rect x="804" y="512" width="40" height="8" fill="#1b5e20"/>
+  <rect x="1100" y="508" width="8" height="100" fill="#5d4037"/>
+  <rect x="1076" y="472" width="56" height="16" fill="#2e7d32"/><rect x="1068" y="488" width="72" height="16" fill="#388e3c"/><rect x="1076" y="504" width="56" height="16" fill="#2e7d32"/>
+  <rect x="1380" y="512" width="8" height="96" fill="#5d4037"/>
+  <rect x="1356" y="476" width="56" height="16" fill="#2e7d32"/><rect x="1348" y="492" width="72" height="16" fill="#388e3c"/><rect x="1356" y="508" width="56" height="16" fill="#2e7d32"/>
+  <!-- Water right -->
+  <rect x="1424" y="628" width="16" height="272" fill="url(#hWater)"/>
+  <rect x="1424" y="616" width="16" height="12" fill="#6d4c41"/>
+  <!-- Overlay -->
+  <rect width="1440" height="900" fill="rgba(4,12,5,0.52)"/>
+</svg>
+
+<!-- ══════════════════════════════════════════
+     BACKGROUND LAYER 2 — STORE
+     Nether: netherrack, lava rivers, glowstone ceiling
+══════════════════════════════════════════ -->
+<svg id="bs" class="bg-layer" viewBox="0 0 1440 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none">
+  <defs>
+    <linearGradient id="nSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1c0200"/>
+      <stop offset="50%" stop-color="#3a0800"/>
+      <stop offset="100%" stop-color="#620f00"/>
+    </linearGradient>
+    <linearGradient id="nRack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6a1f1f"/>
+      <stop offset="100%" stop-color="#4a1414"/>
+    </linearGradient>
+    <linearGradient id="nLava" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff6d00"/>
+      <stop offset="50%" stop-color="#e64a00"/>
+      <stop offset="100%" stop-color="#bf360c"/>
+    </linearGradient>
+    <linearGradient id="nLava2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff8c00"/>
+      <stop offset="100%" stop-color="#ff6200"/>
+    </linearGradient>
+  </defs>
+  <!-- Nether fog/sky -->
+  <rect width="1440" height="900" fill="url(#nSky)"/>
+  <!-- Ceiling netherrack -->
+  <rect x="0" y="0" width="1440" height="110" fill="url(#nRack)"/>
+  <!-- Stalactites -->
+  <rect x="50" y="110" width="28" height="52" fill="#5a1818"/><rect x="58" y="162" width="12" height="22" fill="#461212"/>
+  <rect x="170" y="110" width="20" height="36" fill="#5a1818"/>
+  <rect x="290" y="110" width="36" height="60" fill="#5a1818"/><rect x="302" y="170" width="12" height="24" fill="#461212"/>
+  <rect x="440" y="110" width="24" height="40" fill="#5a1818"/>
+  <rect x="580" y="110" width="44" height="68" fill="#5a1818"/><rect x="592" y="178" width="20" height="28" fill="#461212"/>
+  <rect x="740" y="110" width="28" height="44" fill="#5a1818"/>
+  <rect x="880" y="110" width="36" height="56" fill="#5a1818"/><rect x="892" y="166" width="12" height="24" fill="#461212"/>
+  <rect x="1030" y="110" width="24" height="38" fill="#5a1818"/>
+  <rect x="1160" y="110" width="32" height="50" fill="#5a1818"/><rect x="1170" y="160" width="12" height="22" fill="#461212"/>
+  <rect x="1300" y="110" width="20" height="34" fill="#5a1818"/>
+  <rect x="1400" y="110" width="28" height="46" fill="#5a1818"/>
+  <!-- Glowstone clusters -->
+  <rect x="118" y="92" width="20" height="18" fill="#ffd600"/><rect x="126" y="84" width="8" height="8" fill="#fff176"/>
+  <rect x="118" y="92" width="8" height="8" fill="#ffea00"/><rect x="130" y="92" width="8" height="8" fill="#ffea00"/>
+  <rect x="486" y="80" width="28" height="24" fill="#ffd600"/><rect x="494" y="72" width="12" height="8" fill="#fff176"/>
+  <rect x="486" y="80" width="12" height="12" fill="#ffea00"/><rect x="502" y="80" width="12" height="12" fill="#ffea00"/>
+  <rect x="870" y="88" width="24" height="20" fill="#ffd600"/><rect x="878" y="80" width="8" height="8" fill="#fff176"/>
+  <rect x="1230" y="76" width="20" height="18" fill="#ffd600"/><rect x="1238" y="68" width="8" height="8" fill="#fff176"/>
+  <!-- Floor netherrack -->
+  <rect x="0" y="640" width="1440" height="260" fill="url(#nRack)"/>
+  <rect x="0" y="632" width="1440" height="8" fill="#7a2222"/>
+  <!-- Lava rivers -->
+  <rect x="0" y="632" width="220" height="268" fill="url(#nLava)"/>
+  <rect x="0" y="632" width="220" height="10" fill="#ff8c00" class="lp"/>
+  <rect x="1220" y="632" width="220" height="268" fill="url(#nLava)"/>
+  <rect x="1220" y="632" width="220" height="10" fill="#ff8c00" class="lp2"/>
+  <rect x="580" y="658" width="280" height="242" fill="url(#nLava2)"/>
+  <rect x="580" y="658" width="280" height="10" fill="#ffab40" class="lp"/>
+  <!-- Netherrack terrain columns -->
+  <rect x="260" y="488" width="88" height="152" fill="#6a1f1f"/>
+  <rect x="260" y="480" width="88" height="8" fill="#7a2222"/>
+  <rect x="480" y="520" width="68" height="120" fill="#6a1f1f"/>
+  <rect x="480" y="512" width="68" height="8" fill="#7a2222"/>
+  <rect x="900" y="510" width="72" height="130" fill="#6a1f1f"/>
+  <rect x="900" y="502" width="72" height="8" fill="#7a2222"/>
+  <rect x="1100" y="500" width="84" height="140" fill="#6a1f1f"/>
+  <rect x="1100" y="492" width="84" height="8" fill="#7a2222"/>
+  <!-- Lava drips from ceiling -->
+  <rect x="300" y="148" width="4" height="32" fill="#ff6d00" class="lp2"/>
+  <rect x="600" y="170" width="4" height="24" fill="#ff6d00" class="lp"/>
+  <rect x="940" y="152" width="4" height="28" fill="#ff6d00" class="lp2"/>
+  <rect x="1170" y="158" width="4" height="20" fill="#ff6d00" class="lp"/>
+  <!-- Fire flickers (pixel) -->
+  <rect x="268" y="472" width="8" height="8" fill="#ff6d00" class="lp"/><rect x="272" y="464" width="4" height="8" fill="#ffab40" class="lp"/>
+  <rect x="488" y="504" width="8" height="8" fill="#ff6d00" class="lp2"/><rect x="492" y="496" width="4" height="8" fill="#ffab40" class="lp2"/>
+  <rect x="908" y="494" width="8" height="8" fill="#ff6d00" class="lp"/><rect x="912" y="486" width="4" height="8" fill="#ffab40" class="lp"/>
+  <rect x="1108" y="484" width="8" height="8" fill="#ff6d00" class="lp2"/><rect x="1112" y="476" width="4" height="8" fill="#ffab40" class="lp2"/>
+  <!-- Overlay -->
+  <rect width="1440" height="900" fill="rgba(10,1,0,0.54)"/>
+</svg>
+
+<!-- ══════════════════════════════════════════
+     BACKGROUND LAYER 3 — SUPPORT
+     Night village: stars, moon, dark trees, lit cottages
+══════════════════════════════════════════ -->
+<svg id="bsp" class="bg-layer" viewBox="0 0 1440 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none">
+  <defs>
+    <linearGradient id="sSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#020510"/>
+      <stop offset="55%" stop-color="#060d22"/>
+      <stop offset="100%" stop-color="#091430"/>
+    </linearGradient>
+    <linearGradient id="sGrass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a6020"/>
+      <stop offset="100%" stop-color="#1c4416"/>
+    </linearGradient>
+    <linearGradient id="sDirt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5a3a1e"/>
+      <stop offset="100%" stop-color="#3c2610"/>
+    </linearGradient>
+    <linearGradient id="sStone" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#424242"/>
+      <stop offset="100%" stop-color="#2a2a2a"/>
+    </linearGradient>
+  </defs>
+  <!-- Night sky -->
+  <rect width="1440" height="900" fill="url(#sSky)"/>
+  <!-- Stars bright -->
+  <g fill="#fff" class="tw1">
+    <rect x="54" y="28" width="3" height="3"/><rect x="178" y="52" width="2" height="2"/>
+    <rect x="302" y="20" width="3" height="3"/><rect x="426" y="68" width="2" height="2"/>
+    <rect x="550" y="38" width="3" height="3"/><rect x="674" y="16" width="2" height="2"/>
+    <rect x="798" y="58" width="3" height="3"/><rect x="922" y="32" width="2" height="2"/>
+    <rect x="1046" y="22" width="3" height="3"/><rect x="1170" y="56" width="2" height="2"/>
+    <rect x="1294" y="42" width="3" height="3"/><rect x="1390" y="26" width="2" height="2"/>
+  </g>
+  <!-- Stars mid -->
+  <g fill="#aac4e8" class="tw2">
+    <rect x="120" y="78" width="2" height="2"/><rect x="244" y="108" width="2" height="2"/>
+    <rect x="368" y="48" width="2" height="2"/><rect x="492" y="92" width="2" height="2"/>
+    <rect x="616" y="72" width="2" height="2"/><rect x="740" y="102" width="2" height="2"/>
+    <rect x="864" y="64" width="2" height="2"/><rect x="988" y="84" width="2" height="2"/>
+    <rect x="1112" y="44" width="2" height="2"/><rect x="1236" y="76" width="2" height="2"/>
+    <rect x="1360" y="92" width="2" height="2"/>
+  </g>
+  <!-- Stars faint -->
+  <g fill="#6c8cb8" class="tw3" opacity="0.7">
+    <rect x="90" y="140" width="2" height="2"/><rect x="340" y="126" width="2" height="2"/>
+    <rect x="590" y="152" width="2" height="2"/><rect x="840" y="136" width="2" height="2"/>
+    <rect x="1090" y="122" width="2" height="2"/><rect x="1340" y="146" width="2" height="2"/>
+    <rect x="162" y="172" width="2" height="2"/><rect x="462" y="158" width="2" height="2"/>
+    <rect x="762" y="168" width="2" height="2"/><rect x="1062" y="162" width="2" height="2"/>
+  </g>
+  <!-- Moon (crescent pixel) -->
+  <ellipse cx="196" cy="96" rx="44" ry="44" fill="#dce8f5"/>
+  <ellipse cx="213" cy="87" rx="34" ry="38" fill="#060d22"/>
+  <!-- Land -->
+  <rect x="0" y="632" width="1440" height="20" fill="url(#sGrass)"/>
+  <rect x="0" y="652" width="1440" height="140" fill="url(#sDirt)"/>
+  <rect x="0" y="792" width="1440" height="108" fill="url(#sStone)"/>
+  <!-- Terrain bumps -->
+  <rect x="188" y="600" width="32" height="32" fill="#2a6020"/><rect x="188" y="632" width="32" height="20" fill="#5a3a1e"/>
+  <rect x="680" y="608" width="32" height="24" fill="#2a6020"/><rect x="680" y="632" width="32" height="20" fill="#5a3a1e"/>
+  <rect x="1060" y="600" width="32" height="32" fill="#2a6020"/><rect x="1060" y="632" width="32" height="20" fill="#5a3a1e"/>
+  <!-- Night trees (dark silhouettes) -->
+  <rect x="68" y="484" width="8" height="148" fill="#162814"/>
+  <rect x="44" y="444" width="56" height="16" fill="#1a3012"/><rect x="36" y="460" width="72" height="16" fill="#1e3e16"/><rect x="44" y="476" width="56" height="16" fill="#1a3012"/>
+  <rect x="340" y="500" width="8" height="132" fill="#162814"/>
+  <rect x="316" y="464" width="56" height="16" fill="#1a3012"/><rect x="308" y="480" width="72" height="16" fill="#1e3e16"/><rect x="316" y="496" width="56" height="16" fill="#1a3012"/>
+  <rect x="880" y="494" width="8" height="138" fill="#162814"/>
+  <rect x="848" y="448" width="72" height="16" fill="#1a3012"/><rect x="840" y="464" width="88" height="16" fill="#1e3e16"/><rect x="848" y="480" width="72" height="16" fill="#1a3012"/>
+  <rect x="1220" y="502" width="8" height="130" fill="#162814"/>
+  <rect x="1196" y="466" width="56" height="16" fill="#1a3012"/><rect x="1188" y="482" width="72" height="16" fill="#1e3e16"/><rect x="1196" y="498" width="56" height="16" fill="#1a3012"/>
+  <!-- Village cottage 1 (cobblestone walls) -->
+  <rect x="470" y="500" width="130" height="132" fill="#555"/>
+  <!-- Roof (dark planks) -->
+  <rect x="458" y="460" width="154" height="14" fill="#6b4423"/><rect x="466" y="474" width="138" height="14" fill="#5a3a1e"/><rect x="474" y="488" width="122" height="14" fill="#4e3118"/>
+  <!-- Windows -->
+  <rect x="484" y="516" width="28" height="28" fill="#1a1a2e"/><rect x="486" y="518" width="24" height="24" fill="#6b4400" opacity="0.7"/>
+  <rect x="550" y="516" width="28" height="28" fill="#1a1a2e"/><rect x="552" y="518" width="24" height="24" fill="#6b4400" opacity="0.7"/>
+  <!-- Door -->
+  <rect x="519" y="572" width="32" height="60" fill="#4e3118"/>
+  <!-- Torch left -->
+  <rect x="462" y="494" width="6" height="14" fill="#7d5533"/>
+  <rect x="462" y="490" width="6" height="4" fill="#ff8f00" class="lp"/>
+  <!-- Torch right -->
+  <rect x="592" y="494" width="6" height="14" fill="#7d5533"/>
+  <rect x="592" y="490" width="6" height="4" fill="#ff8f00" class="lp2"/>
+  <!-- Village cottage 2 (larger) -->
+  <rect x="810" y="478" width="170" height="154" fill="#5e5e5e"/>
+  <!-- Roof -->
+  <rect x="798" y="428" width="194" height="14" fill="#6b4423"/><rect x="806" y="442" width="178" height="14" fill="#5a3a1e"/><rect x="814" y="456" width="162" height="14" fill="#4e3118"/><rect x="822" y="470" width="146" height="10" fill="#3e2910"/>
+  <!-- Windows -->
+  <rect x="824" y="494" width="30" height="30" fill="#1a1a2e"/><rect x="826" y="496" width="26" height="26" fill="#6b4400" opacity="0.72"/>
+  <rect x="874" y="494" width="30" height="30" fill="#1a1a2e"/><rect x="876" y="496" width="26" height="26" fill="#6b4400" opacity="0.72"/>
+  <rect x="924" y="494" width="30" height="30" fill="#1a1a2e"/><rect x="926" y="496" width="26" height="26" fill="#6b4400" opacity="0.72"/>
+  <!-- Door -->
+  <rect x="874" y="558" width="36" height="74" fill="#4e3118"/>
+  <!-- Torches -->
+  <rect x="804" y="480" width="6" height="14" fill="#7d5533"/>
+  <rect x="804" y="476" width="6" height="4" fill="#ff8f00" class="lp"/>
+  <rect x="980" y="480" width="6" height="14" fill="#7d5533"/>
+  <rect x="980" y="476" width="6" height="4" fill="#ff8f00" class="lp2"/>
+  <!-- Gravel path -->
+  <rect x="519" y="632" width="32" height="20" fill="#757575" opacity="0.6"/>
+  <rect x="874" y="632" width="36" height="20" fill="#757575" opacity="0.6"/>
+  <!-- Overlay -->
+  <rect width="1440" height="900" fill="rgba(2,4,16,0.56)"/>
+</svg>
+
+<!-- ══════ NAVBAR ══════ -->
+<nav id="nav">
+  <div class="nav-wrap">
+    <div class="logo" onclick="go('home')">⬡ Paradox <span>SMP</span></div>
     <div class="nav-links">
-      <button class="nav-link active" onclick="navigate('home')">Home</button>
-      <button class="nav-link" onclick="navigate('store')">Store</button>
-      <button class="nav-link" onclick="navigate('support')">Support</button>
+      <button class="nl on" onclick="go('home')">Home</button>
+      <button class="nl" onclick="go('store')">Store</button>
+      <button class="nl" onclick="go('support')">Support</button>
     </div>
-    <div class="nav-right">
-      <a href="https://discord.gg/AEk3Jr6ndM" target="_blank" class="btn-discord-nav">
-        <svg width="17" height="17" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
-        <span>Discord</span>
-      </a>
-    </div>
-    <button class="hamburger" id="hamburger" onclick="toggleMob()">
-      <span class="hl" id="hl1"></span>
-      <span class="hl" id="hl2"></span>
-      <span class="hl" id="hl3"></span>
-    </button>
-  </div>
-  <div class="mob-menu" id="mob-menu">
-    <button class="mob-link" onclick="navigate('home')">Home</button>
-    <button class="mob-link" onclick="navigate('store')">Store</button>
-    <button class="mob-link" onclick="navigate('support')">Support</button>
-    <a href="https://discord.gg/AEk3Jr6ndM" target="_blank" class="mob-link" style="color:#a5b4fc;text-decoration:none;gap:8px;">
-      <svg width="17" height="17" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
-      Join Discord
+    <a href="https://discord.gg/YOUR_CODE" target="_blank" class="nav-dc">
+      <svg width="15" height="15" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+      Discord
     </a>
+    <button class="burger" onclick="mob()"><span class="bline"></span><span class="bline"></span><span class="bline"></span></button>
+  </div>
+  <div class="mob" id="mob-menu">
+    <button class="ml" onclick="go('home')">Home</button>
+    <button class="ml" onclick="go('store')">Store</button>
+    <button class="ml" onclick="go('support')">Support</button>
+    <a href="https://discord.gg/YOUR_CODE" target="_blank" class="ml" style="color:#7289da;text-decoration:none">Discord</a>
   </div>
 </nav>
 
-<!-- HOME PAGE -->
-<div id="page-home" class="page active page-wrap">
+<!-- ══════ HOME ══════ -->
+<div id="page-home" class="page on">
   <section class="hero">
-
-    <!-- Minecraft SVG sky + land background -->
-    <svg class="hero-bg" viewBox="0 0 1440 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      <!-- Sky gradient -->
-      <defs>
-        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#1a6ebd"/>
-          <stop offset="55%" stop-color="#3b9fd6"/>
-          <stop offset="100%" stop-color="#5ecfee"/>
-        </linearGradient>
-        <linearGradient id="grassGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#4a9e3f"/>
-          <stop offset="30%" stop-color="#3d8435"/>
-        </linearGradient>
-        <linearGradient id="dirtGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#7d5533"/>
-          <stop offset="100%" stop-color="#5a3d22"/>
-        </linearGradient>
-        <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#1e88e5" stop-opacity="0.85"/>
-          <stop offset="100%" stop-color="#0d47a1" stop-opacity="0.85"/>
-        </linearGradient>
-        <linearGradient id="deepWaterGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#0d47a1" stop-opacity="0.9"/>
-          <stop offset="100%" stop-color="#071a5e" stop-opacity="0.9"/>
-        </linearGradient>
-      </defs>
-
-      <!-- Sky -->
-      <rect width="1440" height="900" fill="url(#skyGrad)"/>
-
-      <!-- Stars (subtle) -->
-      <g opacity="0.25" fill="#fff">
-        <rect x="100" y="40" width="2" height="2"/><rect x="240" y="18" width="2" height="2"/>
-        <rect x="380" y="60" width="2" height="2"/><rect x="520" y="30" width="2" height="2"/>
-        <rect x="660" y="22" width="2" height="2"/><rect x="800" y="55" width="2" height="2"/>
-        <rect x="940" y="15" width="2" height="2"/><rect x="1080" y="42" width="2" height="2"/>
-        <rect x="1220" y="28" width="2" height="2"/><rect x="1360" y="50" width="2" height="2"/>
-        <rect x="170" y="80" width="2" height="2"/><rect x="450" y="75" width="2" height="2"/>
-        <rect x="730" y="88" width="2" height="2"/><rect x="1010" y="68" width="2" height="2"/>
-        <rect x="1300" y="82" width="2" height="2"/>
-      </g>
-
-      <!-- Pixel clouds - group A -->
-      <g class="cloud-a" opacity="0.88">
-        <!-- Cloud 1 -->
-        <rect x="80" y="90" width="16" height="8" fill="#e0f7fa"/>
-        <rect x="88" y="82" width="24" height="8" fill="#e0f7fa"/>
-        <rect x="96" y="74" width="32" height="8" fill="#fff"/>
-        <rect x="104" y="66" width="16" height="8" fill="#fff"/>
-        <rect x="80" y="90" width="48" height="8" fill="#e0f7fa"/>
-        <!-- Cloud 2 -->
-        <rect x="340" y="130" width="16" height="8" fill="#e0f7fa"/>
-        <rect x="348" y="122" width="32" height="8" fill="#fff"/>
-        <rect x="356" y="114" width="24" height="8" fill="#fff"/>
-        <rect x="340" y="130" width="56" height="8" fill="#e0f7fa"/>
-        <!-- Cloud 3 -->
-        <rect x="700" y="70" width="16" height="8" fill="#e0f7fa"/>
-        <rect x="708" y="62" width="32" height="8" fill="#fff"/>
-        <rect x="716" y="54" width="40" height="8" fill="#fff"/>
-        <rect x="724" y="46" width="24" height="8" fill="#fff"/>
-        <rect x="700" y="70" width="64" height="8" fill="#e0f7fa"/>
-        <!-- Cloud 4 -->
-        <rect x="1100" y="110" width="16" height="8" fill="#e0f7fa"/>
-        <rect x="1108" y="102" width="40" height="8" fill="#fff"/>
-        <rect x="1116" y="94" width="32" height="8" fill="#fff"/>
-        <rect x="1100" y="110" width="56" height="8" fill="#e0f7fa"/>
-      </g>
-
-      <!-- Pixel clouds - group B -->
-      <g class="cloud-b" opacity="0.75">
-        <rect x="200" y="155" width="16" height="8" fill="#b2ebf2"/>
-        <rect x="208" y="147" width="32" height="8" fill="#e0f7fa"/>
-        <rect x="216" y="139" width="24" height="8" fill="#fff"/>
-        <rect x="200" y="155" width="56" height="8" fill="#b2ebf2"/>
-
-        <rect x="920" y="100" width="16" height="8" fill="#b2ebf2"/>
-        <rect x="928" y="92" width="40" height="8" fill="#e0f7fa"/>
-        <rect x="936" y="84" width="32" height="8" fill="#fff"/>
-        <rect x="944" y="76" width="16" height="8" fill="#fff"/>
-        <rect x="920" y="100" width="64" height="8" fill="#b2ebf2"/>
-
-        <rect x="1270" y="145" width="16" height="8" fill="#b2ebf2"/>
-        <rect x="1278" y="137" width="32" height="8" fill="#e0f7fa"/>
-        <rect x="1286" y="129" width="24" height="8" fill="#fff"/>
-        <rect x="1270" y="145" width="48" height="8" fill="#b2ebf2"/>
-      </g>
-
-      <!-- Sun (pixel) -->
-      <rect x="1310" y="50" width="8" height="8" fill="#fffde7"/>
-      <rect x="1302" y="58" width="8" height="8" fill="#fff59d"/>
-      <rect x="1318" y="58" width="8" height="8" fill="#fff59d"/>
-      <rect x="1294" y="66" width="48" height="32" fill="#ffee58"/>
-      <rect x="1302" y="98" width="8" height="8" fill="#fff59d"/>
-      <rect x="1318" y="98" width="8" height="8" fill="#fff59d"/>
-      <rect x="1310" y="106" width="8" height="8" fill="#fffde7"/>
-
-      <!-- Terrain base line at y=620 -->
-      <!-- Deep water left section -->
-      <rect x="0" y="620" width="240" height="280" fill="url(#deepWaterGrad)"/>
-      <!-- Water shimmer -->
-      <rect x="0" y="620" width="240" height="16" fill="#29b6f6" opacity="0.4"/>
-      <rect x="0" y="636" width="240" height="8" fill="#0288d1" opacity="0.2"/>
-
-      <!-- Water pixels (pixel art wave) -->
-      <rect x="0" y="612" width="32" height="8" fill="url(#waterGrad)"/>
-      <rect x="32" y="620" width="32" height="8" fill="url(#waterGrad)"/>
-      <rect x="64" y="612" width="32" height="8" fill="url(#waterGrad)"/>
-      <rect x="96" y="620" width="32" height="8" fill="url(#waterGrad)"/>
-      <rect x="128" y="612" width="32" height="8" fill="url(#waterGrad)"/>
-      <rect x="160" y="620" width="32" height="8" fill="url(#waterGrad)"/>
-      <rect x="192" y="612" width="32" height="8" fill="url(#waterGrad)"/>
-      <rect x="224" y="620" width="16" height="8" fill="url(#waterGrad)"/>
-
-      <!-- Shore transition block -->
-      <rect x="224" y="608" width="32" height="12" fill="#5d4037"/>
-      <rect x="224" y="600" width="32" height="8" fill="#6d4c41"/>
-
-      <!-- Land mass -->
-      <!-- Grass top layer -->
-      <rect x="240" y="604" width="1200" height="16" fill="url(#grassGrad)"/>
-      <!-- Dirt below grass -->
-      <rect x="240" y="620" width="1200" height="280" fill="url(#dirtGrad)"/>
-
-      <!-- Stone peeking at bottom -->
-      <rect x="240" y="780" width="1200" height="120" fill="#757575"/>
-      <!-- Stone variation -->
-      <rect x="320" y="780" width="48" height="48" fill="#616161"/>
-      <rect x="560" y="790" width="64" height="40" fill="#616161"/>
-      <rect x="900" y="785" width="56" height="45" fill="#616161"/>
-      <rect x="1200" y="780" width="48" height="55" fill="#616161"/>
-
-      <!-- Grass surface detail (pixel-art blocks) -->
-      <!-- Block columns on surface for terrain variation -->
-      <rect x="360" y="572" width="32" height="32" fill="url(#grassGrad)"/>
-      <rect x="360" y="604" width="32" height="16" fill="url(#dirtGrad)"/>
-      <rect x="392" y="580" width="32" height="24" fill="url(#grassGrad)"/>
-      <rect x="392" y="604" width="32" height="16" fill="url(#dirtGrad)"/>
-
-      <rect x="680" y="580" width="32" height="24" fill="url(#grassGrad)"/>
-      <rect x="680" y="604" width="32" height="16" fill="url(#dirtGrad)"/>
-      <rect x="712" y="572" width="32" height="32" fill="url(#grassGrad)"/>
-      <rect x="712" y="604" width="32" height="16" fill="url(#dirtGrad)"/>
-      <rect x="744" y="564" width="32" height="40" fill="url(#grassGrad)"/>
-      <rect x="744" y="604" width="32" height="16" fill="url(#dirtGrad)"/>
-
-      <rect x="1060" y="580" width="32" height="24" fill="url(#grassGrad)"/>
-      <rect x="1060" y="604" width="32" height="16" fill="url(#dirtGrad)"/>
-      <rect x="1092" y="572" width="32" height="32" fill="url(#grassGrad)"/>
-      <rect x="1092" y="604" width="32" height="16" fill="url(#dirtGrad)"/>
-
-      <!-- Trees (pixel art) -->
-      <!-- Tree 1 -->
-      <rect x="288" y="500" width="8" height="104" fill="#5d4037"/>  <!-- trunk -->
-      <rect x="264" y="460" width="56" height="16" fill="#2e7d32"/>
-      <rect x="256" y="476" width="72" height="16" fill="#388e3c"/>
-      <rect x="264" y="492" width="56" height="16" fill="#2e7d32"/>
-      <rect x="272" y="508" width="40" height="8" fill="#1b5e20"/>
-
-      <!-- Tree 2 -->
-      <rect x="500" y="516" width="8" height="88" fill="#5d4037"/>
-      <rect x="476" y="480" width="56" height="16" fill="#2e7d32"/>
-      <rect x="468" y="496" width="72" height="16" fill="#388e3c"/>
-      <rect x="476" y="512" width="56" height="16" fill="#2e7d32"/>
-      <rect x="484" y="528" width="40" height="8" fill="#1b5e20"/>
-
-      <!-- Tree 3 (big) -->
-      <rect x="820" y="492" width="8" height="112" fill="#5d4037"/>
-      <rect x="788" y="444" width="72" height="16" fill="#2e7d32"/>
-      <rect x="780" y="460" width="88" height="16" fill="#388e3c"/>
-      <rect x="788" y="476" width="72" height="16" fill="#388e3c"/>
-      <rect x="796" y="492" width="56" height="16" fill="#2e7d32"/>
-      <rect x="804" y="508" width="40" height="8" fill="#1b5e20"/>
-
-      <!-- Tree 4 -->
-      <rect x="1100" y="508" width="8" height="96" fill="#5d4037"/>
-      <rect x="1076" y="468" width="56" height="16" fill="#2e7d32"/>
-      <rect x="1068" y="484" width="72" height="16" fill="#388e3c"/>
-      <rect x="1076" y="500" width="56" height="16" fill="#2e7d32"/>
-      <rect x="1084" y="516" width="40" height="8" fill="#1b5e20"/>
-
-      <!-- Tree 5 (far right) -->
-      <rect x="1360" y="516" width="8" height="88" fill="#5d4037"/>
-      <rect x="1336" y="480" width="56" height="16" fill="#2e7d32"/>
-      <rect x="1328" y="496" width="72" height="16" fill="#388e3c"/>
-      <rect x="1336" y="512" width="56" height="16" fill="#2e7d32"/>
-      <rect x="1344" y="528" width="40" height="8" fill="#1b5e20"/>
-
-      <!-- Dirt under right water -->
-      <rect x="1440" y="620" width="0" height="280" fill="url(#dirtGrad)"/>
-
-      <!-- Right water section -->
-      <rect x="1400" y="620" width="40" height="280" fill="url(#deepWaterGrad)"/>
-      <rect x="1400" y="620" width="40" height="16" fill="#29b6f6" opacity="0.4"/>
-
-      <!-- Shore right -->
-      <rect x="1384" y="608" width="16" height="12" fill="#5d4037"/>
-      <rect x="1384" y="600" width="16" height="8" fill="#6d4c41"/>
-
-      <!-- Dark overlay to blend text area -->
-      <rect width="1440" height="900" fill="rgba(5,18,8,0.54)"/>
-    </svg>
-
-    <div class="hero-glow"></div>
-    <div class="hero-inner">
-      <div><span class="badge reveal">⚡ Season 3 is Live</span></div>
-      <h1 class="hero-title reveal">A World Beyond<br><span class="gt">Survival.</span></h1>
-      <p class="hero-sub reveal">
-        Paradox SMP is an immersive survival multiplayer experience —<br>
-        featuring custom economies, epic quests, clan warfare,<br>
-        and a thriving community of adventurers.
-      </p>
-      <div class="reveal" style="margin-top:38px">
-        <a href="https://discord.gg/AEk3Jr6ndM" target="_blank" class="btn-primary">
-          <svg width="20" height="20" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
-          Join Discord
-        </a>
-      </div>
-    </div>
-    <div class="scroll-hint">scroll to explore ↓</div>
-  </section>
-
-  <section class="sect">
-    <div class="sect-label reveal">What We Offer</div>
-    <h2 class="sect-title reveal">Everything You Need to <span class="gt">Thrive</span></h2>
-    <div class="feat-grid">
-      <div class="feat-card reveal"><div class="feat-icon">💰</div><h3 class="feat-title">Player Economy</h3><p class="feat-desc">Trade, sell, and build your wealth with a dynamic player-driven market.</p><div class="card-glow"></div></div>
-      <div class="feat-card reveal"><div class="feat-icon">📜</div><h3 class="feat-title">Epic Quests</h3><p class="feat-desc">Embark on story-driven quests with unique rewards and lore.</p><div class="card-glow"></div></div>
-      <div class="feat-card reveal"><div class="feat-icon">⚔️</div><h3 class="feat-title">PvP Arenas</h3><p class="feat-desc">Test your skills in ranked PvP arenas with seasonal leaderboards.</p><div class="card-glow"></div></div>
-      <div class="feat-card reveal"><div class="feat-icon">🌍</div><h3 class="feat-title">Custom World</h3><p class="feat-desc">Explore a hand-crafted, 30,000 block world rich with secrets.</p><div class="card-glow"></div></div>
-      <div class="feat-card reveal"><div class="feat-icon">🎉</div><h3 class="feat-title">Server Events</h3><p class="feat-desc">Weekly community events, build battles, and holiday specials.</p><div class="card-glow"></div></div>
-      <div class="feat-card reveal"><div class="feat-icon">🏰</div><h3 class="feat-title">Clans</h3><p class="feat-desc">Form or join clans, claim territory, and dominate the leaderboard.</p><div class="card-glow"></div></div>
-    </div>
-  </section>
-</div>
-
-<!-- STORE PAGE -->
-<div id="page-store" class="page page-wrap">
-  <div class="page-hero">
-    <div class="page-hero-glow"></div>
-    <h1 class="page-hero-title reveal">Paradox <span class="gt">Store</span></h1>
-    <p class="page-hero-sub reveal">Support the server and unlock exclusive perks. All purchases are permanent.</p>
-    <div class="notice reveal">🔒 Powered by Tebex — Secure Checkout</div>
-  </div>
-  <section class="sect">
-    <div class="feat-banner reveal">
-      <div class="feat-banner-badge">⭐ Featured Package</div>
-      <h3 class="feat-banner-name">Sovereign Rank</h3>
-      <p class="feat-banner-desc">The ultimate Paradox experience — every perk, every feature, forever.</p>
-      <div class="feat-banner-price">$39.99</div>
-      <a href="https://store.paradoxsmp.net" target="_blank" class="btn-primary">Buy Now →</a>
-    </div>
-
-    <div class="tabs reveal" style="margin-top:48px" id="store-tabs">
-      <button class="tab active" onclick="setTab('All')">All</button>
-      <button class="tab" onclick="setTab('Ranks')">Ranks</button>
-      <button class="tab" onclick="setTab('Keys')">Keys</button>
-    </div>
-
-    <div id="ranks-section">
-      <div class="sect-label reveal" style="margin-bottom:18px">Ranks</div>
-      <div class="ranks-grid">
-        <div class="rank-card reveal">
-          <div class="rank-crown">👑</div>
-          <div class="rank-name" style="color:#7dd3fc">Wanderer</div>
-          <div class="rank-price" style="color:#7dd3fc">$4.99</div>
-          <ul class="rank-perks">
-            <li><span class="perk-dot" style="color:#7dd3fc">✦</span><span>/fly in claimed land</span></li>
-            <li><span class="perk-dot" style="color:#7dd3fc">✦</span><span>Colored chat</span></li>
-            <li><span class="perk-dot" style="color:#7dd3fc">✦</span><span>2 homes</span></li>
-            <li><span class="perk-dot" style="color:#7dd3fc">✦</span><span>Wanderer kit</span></li>
-          </ul>
-          <a href="https://store.paradoxsmp.net" target="_blank" class="btn-buy">Purchase</a>
-          <div class="card-glow" style="background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(125,211,252,0.1),transparent)"></div>
-        </div>
-        <div class="rank-card reveal">
-          <div class="rank-crown">👑</div>
-          <div class="rank-name" style="color:#38bdf8">Explorer</div>
-          <div class="rank-price" style="color:#38bdf8">$9.99</div>
-          <ul class="rank-perks">
-            <li><span class="perk-dot" style="color:#38bdf8">✦</span><span>5 homes</span></li>
-            <li><span class="perk-dot" style="color:#38bdf8">✦</span><span>/nick command</span></li>
-            <li><span class="perk-dot" style="color:#38bdf8">✦</span><span>Particle trails</span></li>
-            <li><span class="perk-dot" style="color:#38bdf8">✦</span><span>Explorer kit</span></li>
-            <li><span class="perk-dot" style="color:#38bdf8">✦</span><span>Priority login</span></li>
-          </ul>
-          <a href="https://store.paradoxsmp.net" target="_blank" class="btn-buy">Purchase</a>
-          <div class="card-glow" style="background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(56,189,248,0.1),transparent)"></div>
-        </div>
-        <div class="rank-card reveal">
-          <div class="rank-crown">👑</div>
-          <div class="rank-name" style="color:#a78bfa">Pathfinder</div>
-          <div class="rank-price" style="color:#a78bfa">$19.99</div>
-          <ul class="rank-perks">
-            <li><span class="perk-dot" style="color:#a78bfa">✦</span><span>10 homes</span></li>
-            <li><span class="perk-dot" style="color:#a78bfa">✦</span><span>Custom join messages</span></li>
-            <li><span class="perk-dot" style="color:#a78bfa">✦</span><span>3 plot claims</span></li>
-            <li><span class="perk-dot" style="color:#a78bfa">✦</span><span>Monthly crate key</span></li>
-            <li><span class="perk-dot" style="color:#a78bfa">✦</span><span>Pathfinder kit</span></li>
-          </ul>
-          <a href="https://store.paradoxsmp.net" target="_blank" class="btn-buy">Purchase</a>
-          <div class="card-glow" style="background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(167,139,250,0.1),transparent)"></div>
-        </div>
-        <div class="rank-card reveal">
-          <div class="rank-crown">👑</div>
-          <div class="rank-name" style="color:#f59e0b">Sovereign</div>
-          <div class="rank-price" style="color:#f59e0b">$39.99</div>
-          <ul class="rank-perks">
-            <li><span class="perk-dot" style="color:#f59e0b">✦</span><span>Unlimited homes</span></li>
-            <li><span class="perk-dot" style="color:#f59e0b">✦</span><span>All cosmetics unlocked</span></li>
-            <li><span class="perk-dot" style="color:#f59e0b">✦</span><span>Priority queue</span></li>
-            <li><span class="perk-dot" style="color:#f59e0b">✦</span><span>VIP Discord role</span></li>
-            <li><span class="perk-dot" style="color:#f59e0b">✦</span><span>Monthly keys</span></li>
-            <li><span class="perk-dot" style="color:#f59e0b">✦</span><span>Sovereign kit</span></li>
-          </ul>
-          <a href="https://store.paradoxsmp.net" target="_blank" class="btn-buy">Purchase</a>
-          <div class="card-glow" style="background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(245,158,11,0.1),transparent)"></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="keys-section" style="margin-top:56px">
-      <div class="sect-label reveal" style="margin-bottom:18px">Keys</div>
-      <div class="keys-grid">
-        <div class="key-card reveal">
-          <div style="font-size:2.2rem;margin-bottom:14px">🗝️</div>
-          <div class="rank-name" style="color:#fbbf24">Vote Key x10</div>
-          <p class="key-desc">10 Vote Crate keys — great rewards for new players.</p>
-          <div class="rank-price" style="color:#fbbf24;margin-bottom:20px">$1.99</div>
-          <a href="https://store.paradoxsmp.net" target="_blank" class="btn-buy">Purchase</a>
-        </div>
-        <div class="key-card reveal">
-          <div style="font-size:2.2rem;margin-bottom:14px">🗝️</div>
-          <div class="rank-name" style="color:#f87171">Myth Key x5</div>
-          <p class="key-desc">5 Mythic keys with chances at exclusive gear and rank upgrades.</p>
-          <div class="rank-price" style="color:#f87171;margin-bottom:20px">$8.99</div>
-          <a href="https://store.paradoxsmp.net" target="_blank" class="btn-buy">Purchase</a>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- SUPPORT PAGE -->
-<div id="page-support" class="page page-wrap">
-  <div class="page-hero">
-    <div class="page-hero-glow"></div>
-    <h1 class="page-hero-title reveal">Support <span class="gt">Hub</span></h1>
-    <p class="page-hero-sub reveal">Our staff team is here to help. Find answers or reach us on Discord.</p>
-  </div>
-  <section class="sect">
-    <div class="sect-label reveal">Get Help</div>
-    <div class="dc-card reveal">
-      <div class="dc-icon">
-        <svg width="34" height="34" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
-      </div>
-      <div style="flex:1">
-        <h3 class="dc-title">Discord Support</h3>
-        <p class="dc-desc">Get help from staff and the community. Our team is active 7 days a week.</p>
-      </div>
-      <a href="https://discord.gg/AEk3Jr6ndM" target="_blank" class="btn-primary" style="flex-shrink:0;white-space:nowrap">
+    <div class="tag r"><span class="tag-dot"></span>Season 3 — Now Live</div>
+    <h1 class="r">A World Beyond<br><em>Survival.</em></h1>
+    <p class="hero-sub r">
+      Paradox SMP is an immersive survival multiplayer experience —<br>
+      custom economies, epic quests, clan warfare,<br>
+      and a community of thousands.
+    </p>
+    <div class="r">
+      <a href="https://discord.gg/YOUR_CODE" target="_blank" class="btn">
         <svg width="18" height="18" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
         Join Discord
       </a>
     </div>
   </section>
+
   <section class="sect">
-    <div class="sect-label reveal">Knowledge Base</div>
-    <h2 class="sect-title reveal">Frequently Asked <span class="gt">Questions</span></h2>
-    <div class="faq-list">
-      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span>How do I connect to the server?</span><span class="faq-arrow">+</span></div><div class="faq-body"><p>Open Minecraft Java Edition, go to Multiplayer > Add Server, and enter: play.paradoxsmp.net. We support 1.20+.</p></div></div>
-      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span>What version does the server run?</span><span class="faq-arrow">+</span></div><div class="faq-body"><p>Paradox SMP runs the latest stable Minecraft Java Edition (1.21). Bedrock is not supported.</p></div></div>
-      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span>I was unfairly banned. What do I do?</span><span class="faq-arrow">+</span></div><div class="faq-body"><p>Submit a ban appeal in our Discord #ban-appeals channel. Include your username and reason you believe the ban was incorrect.</p></div></div>
-      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span>How do I report a cheater or griefer?</span><span class="faq-arrow">+</span></div><div class="faq-body"><p>Use /report &lt;username&gt; in-game or post in #player-reports on Discord with evidence.</p></div></div>
-      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span>Do purchased ranks transfer across seasons?</span><span class="faq-arrow">+</span></div><div class="faq-body"><p>Yes! All ranks are permanent and carry over between seasons.</p></div></div>
-      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span>Can I get a refund on a purchase?</span><span class="faq-arrow">+</span></div><div class="faq-body"><p>All sales are final. Contact us for technical issues with a purchase.</p></div></div>
-      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span>How do I create a clan?</span><span class="faq-arrow">+</span></div><div class="faq-body"><p>Use /clan create &lt;name&gt; in-game. It costs $5,000 in-game currency. Invite with /clan invite &lt;player&gt;.</p></div></div>
+    <div class="label r">Features</div>
+    <h2 class="r">Built for <em>serious</em> players.</h2>
+    <div class="grid-3">
+      <div class="gc r"><div class="gc-icon">💰</div><div class="gc-title">Player Economy</div><p class="gc-desc">Trade, sell, and build your wealth with a dynamic player-driven market and auction house.</p></div>
+      <div class="gc r"><div class="gc-icon">📜</div><div class="gc-title">Epic Quests</div><p class="gc-desc">Embark on story-driven quests with unique rewards, custom bosses, and deep lore.</p></div>
+      <div class="gc r"><div class="gc-icon">⚔️</div><div class="gc-title">PvP Arenas</div><p class="gc-desc">Test your skills in ranked PvP arenas with seasonal leaderboards and prizes.</p></div>
+      <div class="gc r"><div class="gc-icon">🌍</div><div class="gc-title">Custom World</div><p class="gc-desc">Explore a hand-crafted 30,000 block world rich with secrets, dungeons, and lore.</p></div>
+      <div class="gc r"><div class="gc-icon">🎉</div><div class="gc-title">Server Events</div><p class="gc-desc">Weekly community events, build battles, and seasonal holiday specials.</p></div>
+      <div class="gc r"><div class="gc-icon">🏰</div><div class="gc-title">Clans</div><p class="gc-desc">Form or join clans, claim territory, and dominate the faction leaderboard.</p></div>
     </div>
   </section>
 </div>
 
-<footer>© 2026 Paradox SMP. Not affiliated with Mojang or Microsoft.</footer>
+<!-- ══════ STORE ══════ -->
+<div id="page-store" class="page">
+  <div class="ph">
+    <div class="label r">Shop</div>
+    <h1 class="r">Paradox <em style="color:var(--green);font-style:normal">Store</em></h1>
+    <p class="r">Support the server and unlock exclusive perks. All purchases are permanent.</p>
+    <div class="ph-badge r">🔒 Secure checkout via Tebex</div>
+  </div>
+
+  <section class="sect">
+    <div class="banner r">
+      <div>
+        <div class="banner-label">Featured Package</div>
+        <div class="banner-name">Sovereign Rank</div>
+        <div class="banner-desc">The ultimate Paradox experience — every perk, every feature, forever.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:16px;flex-shrink:0">
+        <div class="banner-price">$39.99</div>
+        <a href="https://store.paradoxsmp.net" target="_blank" class="btn">Buy Now →</a>
+      </div>
+    </div>
+
+    <div class="tabs r" id="stabs">
+      <button class="tab on" onclick="stab(this,'all')">All</button>
+      <button class="tab" onclick="stab(this,'ranks')">Ranks</button>
+      <button class="tab" onclick="stab(this,'keys')">Keys</button>
+    </div>
+
+    <div id="sec-ranks">
+      <div class="label r" style="margin-bottom:16px">Ranks</div>
+      <div class="ranks">
+        <div class="rcard r">
+          <div class="rc-name" style="color:#7dd3fc">Wanderer</div>
+          <div class="rc-price" style="color:#7dd3fc">$4.99</div>
+          <ul class="rc-perks">
+            <li>/fly in claimed land</li><li>Colored chat</li><li>2 homes</li><li>Wanderer kit</li>
+          </ul>
+          <a href="https://store.paradoxsmp.net" target="_blank" class="buy">Purchase</a>
+        </div>
+        <div class="rcard r">
+          <div class="rc-name" style="color:#38bdf8">Explorer</div>
+          <div class="rc-price" style="color:#38bdf8">$9.99</div>
+          <ul class="rc-perks">
+            <li>5 homes</li><li>/nick command</li><li>Particle trails</li><li>Explorer kit</li><li>Priority login</li>
+          </ul>
+          <a href="https://store.paradoxsmp.net" target="_blank" class="buy">Purchase</a>
+        </div>
+        <div class="rcard r">
+          <div class="rc-name" style="color:#a78bfa">Pathfinder</div>
+          <div class="rc-price" style="color:#a78bfa">$19.99</div>
+          <ul class="rc-perks">
+            <li>10 homes</li><li>Custom join messages</li><li>3 plot claims</li><li>Monthly crate key</li><li>Pathfinder kit</li>
+          </ul>
+          <a href="https://store.paradoxsmp.net" target="_blank" class="buy">Purchase</a>
+        </div>
+        <div class="rcard r">
+          <div class="rc-name" style="color:#f59e0b">Sovereign</div>
+          <div class="rc-price" style="color:#f59e0b">$39.99</div>
+          <ul class="rc-perks">
+            <li>Unlimited homes</li><li>All cosmetics</li><li>Priority queue</li><li>VIP Discord role</li><li>Monthly keys</li><li>Sovereign kit</li>
+          </ul>
+          <a href="https://store.paradoxsmp.net" target="_blank" class="buy">Purchase</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="sec-keys" style="margin-top:48px">
+      <div class="label r" style="margin-bottom:16px">Keys</div>
+      <div class="keys">
+        <div class="kcard r">
+          <div class="kc-icon">🗝️</div>
+          <div class="kc-name" style="color:#fbbf24">Vote Key ×10</div>
+          <div class="kc-desc">10 Vote Crate keys — solid rewards for new players.</div>
+          <div class="kc-price">$1.99</div>
+          <a href="https://store.paradoxsmp.net" target="_blank" class="buy" style="width:auto;padding:10px 24px">Purchase</a>
+        </div>
+        <div class="kcard r">
+          <div class="kc-icon">🗝️</div>
+          <div class="kc-name" style="color:#f87171">Myth Key ×5</div>
+          <div class="kc-desc">5 Mythic keys with chances at exclusive gear and rank upgrades.</div>
+          <div class="kc-price">$8.99</div>
+          <a href="https://store.paradoxsmp.net" target="_blank" class="buy" style="width:auto;padding:10px 24px">Purchase</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ══════ SUPPORT ══════ -->
+<div id="page-support" class="page">
+  <div class="ph">
+    <div class="label r">Help</div>
+    <h1 class="r">Support <em style="color:var(--green);font-style:normal">Hub</em></h1>
+    <p class="r">Our staff team is active 7 days a week. Find answers below or reach us on Discord.</p>
+  </div>
+
+  <section class="sect">
+    <div class="label r" style="margin-bottom:16px">Contact</div>
+    <div class="dc-row r">
+      <div class="dc-ico">
+        <svg width="28" height="28" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+      </div>
+      <div style="flex:1">
+        <div class="dc-title">Discord — #support</div>
+        <div class="dc-desc">Open a ticket or ask in our community channels. Staff respond within a few hours.</div>
+      </div>
+      <a href="https://discord.gg/YOUR_CODE" target="_blank" class="btn" style="flex-shrink:0">
+        <svg width="16" height="16" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+        Join Discord
+      </a>
+    </div>
+
+    <div class="label r" style="margin-bottom:0">FAQ</div>
+    <div class="faqs r">
+      <div class="fi" onclick="faq(this)"><div class="fq"><span>How do I connect to the server?</span><span class="fa-arrow">+</span></div><div class="fb"><p>Open Minecraft Java Edition, go to Multiplayer → Add Server, and enter <strong>play.paradoxsmp.net</strong>. We support 1.20 and above.</p></div></div>
+      <div class="fi" onclick="faq(this)"><div class="fq"><span>What Minecraft version does the server run?</span><span class="fa-arrow">+</span></div><div class="fb"><p>Paradox SMP runs the latest stable Minecraft Java Edition (1.21). Bedrock Edition is not supported at this time.</p></div></div>
+      <div class="fi" onclick="faq(this)"><div class="fq"><span>I was banned unfairly. What do I do?</span><span class="fa-arrow">+</span></div><div class="fb"><p>Submit a ban appeal in the Discord #ban-appeals channel. Include your username and a clear explanation of why you believe the ban was incorrect.</p></div></div>
+      <div class="fi" onclick="faq(this)"><div class="fq"><span>How do I report a cheater or griefer?</span><span class="fa-arrow">+</span></div><div class="fb"><p>Use <code>/report &lt;username&gt;</code> in-game, or post in #player-reports on Discord with screenshot or video evidence.</p></div></div>
+      <div class="fi" onclick="faq(this)"><div class="fq"><span>Do ranks carry over between seasons?</span><span class="fa-arrow">+</span></div><div class="fb"><p>Yes — all purchased ranks are permanent and transfer automatically to every new season.</p></div></div>
+      <div class="fi" onclick="faq(this)"><div class="fq"><span>Can I get a refund?</span><span class="fa-arrow">+</span></div><div class="fb"><p>All sales are final per our store policy. If you experienced a technical issue with your purchase, contact staff directly on Discord.</p></div></div>
+      <div class="fi" onclick="faq(this)"><div class="fq"><span>How do I create a clan?</span><span class="fa-arrow">+</span></div><div class="fb"><p>Use <code>/clan create &lt;name&gt;</code> in-game. Creating a clan costs $5,000 in-game currency. Invite members with <code>/clan invite &lt;player&gt;</code>.</p></div></div>
+    </div>
+  </section>
+</div>
+
+<footer>© 2026 Paradox SMP &nbsp;·&nbsp; Not affiliated with Mojang or Microsoft</footer>
 
 <script>
-  // ── SCROLL
-  window.addEventListener('scroll', () => {
-    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
-  });
+// Scroll nav
+window.addEventListener('scroll',()=>{
+  document.getElementById('nav').classList.toggle('solid',scrollY>10);
+});
 
-  // ── REVEAL
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('revealed'); });
-  }, { threshold: 0.08 });
-  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+// Reveal
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')})},{threshold:0.07});
+document.querySelectorAll('.r').forEach(el=>obs.observe(el));
 
-  // ── NAVIGATION
-  function navigate(id) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    const page = document.getElementById('page-' + id);
-    page.classList.add('active');
-    page.classList.remove('page-wrap');
-    void page.offsetWidth;
-    page.classList.add('page-wrap');
-    const idx = ['home','store','support'].indexOf(id);
-    document.querySelectorAll('.nav-link')[idx].classList.add('active');
-    document.getElementById('mob-menu').classList.remove('open');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    page.querySelectorAll('.reveal').forEach(el => io.observe(el));
-  }
+// Navigate + swap background
+const bgMap={home:'bh',store:'bs',support:'bsp'};
+function go(id){
+  document.querySelectorAll('.page').forEach(p=>{p.classList.remove('on')});
+  document.querySelectorAll('.nl').forEach(l=>{l.classList.remove('on')});
+  document.querySelectorAll('.bg-layer').forEach(b=>{b.classList.remove('on')});
 
-  // ── MOBILE MENU
-  function toggleMob() {
-    document.getElementById('mob-menu').classList.toggle('open');
-  }
+  document.getElementById('page-'+id).classList.add('on');
+  document.getElementById(bgMap[id]).classList.add('on');
+  const idx=['home','store','support'].indexOf(id);
+  document.querySelectorAll('.nl')[idx].classList.add('on');
+  document.getElementById('mob-menu').classList.remove('open');
+  window.scrollTo({top:0,behavior:'smooth'});
+  // observe new elements
+  document.getElementById('page-'+id).querySelectorAll('.r').forEach(el=>obs.observe(el));
+}
 
-  // ── STORE TABS
-  function setTab(tab) {
-    document.querySelectorAll('#store-tabs .tab').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
-    const r = document.getElementById('ranks-section');
-    const k = document.getElementById('keys-section');
-    r.style.display = (tab === 'Keys') ? 'none' : 'block';
-    k.style.display = (tab === 'Ranks') ? 'none' : 'block';
-  }
+// Mobile menu
+function mob(){document.getElementById('mob-menu').classList.toggle('open')}
 
-  // ── FAQ
-  function toggleFaq(el) {
-    const body = el.querySelector('.faq-body');
-    const isOpen = el.classList.contains('open');
-    el.classList.toggle('open');
-    body.style.maxHeight = isOpen ? '0' : body.scrollHeight + 'px';
-  }
+// Store tabs
+function stab(btn,tab){
+  document.querySelectorAll('#stabs .tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('sec-ranks').style.display=(tab==='keys')?'none':'block';
+  document.getElementById('sec-keys').style.display=(tab==='ranks')?'none':'block';
+}
+
+// FAQ
+function faq(el){
+  const b=el.querySelector('.fb'),open=el.classList.contains('open');
+  el.classList.toggle('open');
+  b.style.maxHeight=open?'0':b.scrollHeight+'px';
+}
 </script>
 </body>
 </html>
